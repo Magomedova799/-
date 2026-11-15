@@ -1,11 +1,14 @@
-from fastapi import APIRouter, Depends,  HTTPException
+import os
+import uuid
+
+from fastapi import (APIRouter, Depends,HTTPException,UploadFile,File, Form)
 from sqlalchemy.orm import Session
 
-from sqlalchemy import select
 from app.dependencies import get_db, get_current_user
 from app.models.project import Project
 from app.models.user import User
 from app.schemas.project import ProjectCreate, ProjectRead
+
 
 router = APIRouter(
     prefix="/projects",
@@ -15,18 +18,49 @@ router = APIRouter(
 
 @router.post("/create", response_model=ProjectRead)
 def create_project(
-    data: ProjectCreate,
+    title: str = Form(...),
+    description: str = Form(...),
+    technologies: str = Form(...),
+    category_id: int | None = Form(None),
+    github_url: str | None = Form(None),
+    demo_url: str | None = Form(None),
+    file: UploadFile | None = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    image_url = None
+
+    if file:
+        allowed_types = ["image/jpeg", "image/png", "image/webp"]
+
+        if file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=400,
+                detail="Разрешены только JPG, PNG и WEBP"
+            )
+
+        extension = os.path.splitext(file.filename)[1].lower()
+
+        filename = f"{uuid.uuid4()}{extension}"
+
+        upload_dir = "static/uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+
+        file_path = os.path.join(upload_dir, filename)
+
+        with open(file_path, "wb") as image:
+            image.write(file.file.read())
+
+        image_url = f"/static/uploads/{filename}"
+
     project = Project(
-        title=data.title,
-        description=data.description,
-        technologies=data.technologies,
-        category_id=data.category_id,
-        github_url=data.github_url,
-        demo_url=data.demo_url,
-        image_url=data.image_url,
+        title=title,
+        description=description,
+        technologies=technologies,
+        category_id=category_id,
+        github_url=github_url,
+        demo_url=demo_url,
+        image_url=image_url,
         user_id=current_user.id
     )
 
