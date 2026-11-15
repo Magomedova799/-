@@ -42,7 +42,7 @@ def get_projects(db: Session = Depends(get_db)):
     projects = db.query(Project).order_by(Project.id.desc()).all()
     return projects
 
-@router.get("/search", response_model=list[ProjectRead])
+@router.get("/search/projects", response_model=list[ProjectRead])
 def search_projects(
     title: str,
     db: Session = Depends(get_db)
@@ -56,6 +56,17 @@ def search_projects(
             status_code=404,
             detail="Проект не найден"
         )
+
+    return projects
+
+@router.get("/category/{category_id}", response_model=list[ProjectRead])
+def get_projects_by_category(
+    category_id: int,
+    db: Session = Depends(get_db)
+):
+    projects = db.query(Project).filter(
+        Project.category_id == category_id
+    ).order_by(Project.id.desc()).all()
 
     return projects
 
