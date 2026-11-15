@@ -1,7 +1,14 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+from app.database import Base, engine
+
 from app.routers.auth import router as auth_router
 from app.routers.projects import router as projects_router
 from app.routers.categories import router as categories_router
+
+from app.models.poll import Poll
+from app.routers.polls import router as polls_router
 
 app = FastAPI(
     title="DevSpace API",
@@ -9,6 +16,12 @@ app = FastAPI(
     version="1.0.0"
 )
 
+Base.metadata.create_all(bind=engine)
+
 app.include_router(auth_router)
 app.include_router(projects_router)
 app.include_router(categories_router)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+app.include_router(polls_router)
