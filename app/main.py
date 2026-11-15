@@ -9,6 +9,7 @@ from app.routers.categories import router as categories_router
 
 from app.models.poll import Poll
 from app.routers.polls import router as polls_router
+from app.routers.articles import router as articles_router
 
 app = FastAPI(
     title="DevSpace API",
@@ -25,3 +26,4 @@ app.include_router(categories_router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 app.include_router(polls_router)
+app.include_router(articles_router)
