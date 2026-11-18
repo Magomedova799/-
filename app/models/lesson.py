@@ -10,3 +10,5 @@ class Lesson(Base):
     title: Mapped[str] = mapped_column(String(200),nullable=False)
     content: Mapped[str] = mapped_column(Text,nullable=False)
     position: Mapped[int] = mapped_column(nullable=False)
+    image_url: Mapped[str | None] = mapped_column(String(500),nullable=True)
+    video_url: Mapped[str | None] = mapped_column(String(500),nullable=True)
