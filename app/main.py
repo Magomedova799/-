@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, HTMLResponse
 
 from app.database import Base, engine
-
 from app.routers.auth import router as auth_router
 from app.routers.projects import router as projects_router
 from app.routers.categories import router as categories_router
@@ -12,29 +12,56 @@ from app.routers.polls import router as polls_router
 from app.routers.articles import router as articles_router
 from app.routers.lessons import router as lessons_router
 from app.routers.courses import router as courses_router
-from app.routers import assignments
-from app.routers import tests
-from app.routers import social
-from fastapi.responses import FileResponse
+from app.routers import assignments, tests, social
 
-app = FastAPI(
-    title="DevSpace API",
-    description="Платформа для начинающих разработчиков",
-    version="1.0.0"
-)
+app = FastAPI(title="DevSpace API", description="Платформа для начинающих разработчиков", version="1.0.0")
+Base.metadata.create_all(bind=engine)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+def render_page(page: str, item_id: int | None = None):
+    with open("templates/app.html", encoding="utf-8") as file:
+        html = file.read()
+    return HTMLResponse(html.replace("__PAGE__", page).replace("__ID__", str(item_id or "")))
 
 @app.get("/", include_in_schema=False)
 def home():
     return FileResponse("templates/index.html")
 
-Base.metadata.create_all(bind=engine)
+@app.get("/login", include_in_schema=False)
+def login_page():
+    return render_page("login")
+
+@app.get("/register", include_in_schema=False)
+def register_page():
+    return render_page("register")
+
+@app.get("/profile", include_in_schema=False)
+def profile_page():
+    return render_page("profile")
+
+@app.get("/create", include_in_schema=False)
+def create_page():
+    return render_page("create")
+
+@app.get("/course/{item_id}", include_in_schema=False)
+def course_page(item_id: int):
+    return render_page("course", item_id)
+
+@app.get("/article/{item_id}", include_in_schema=False)
+def article_page(item_id: int):
+    return render_page("article", item_id)
+
+@app.get("/lesson/{item_id}", include_in_schema=False)
+def lesson_page(item_id: int):
+    return render_page("lesson", item_id)
+
+@app.get("/test/{item_id}", include_in_schema=False)
+def test_page(item_id: int):
+    return render_page("test", item_id)
 
 app.include_router(auth_router)
 app.include_router(projects_router)
 app.include_router(categories_router)
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 app.include_router(polls_router)
 app.include_router(articles_router)
 app.include_router(lessons_router)
