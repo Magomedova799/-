@@ -23,3 +23,15 @@ class UserRead(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class UserUpdate(BaseModel):
+    username: str
+    email: str
+    bio: str | None = None
+    avatar_url: str | None = None
+
+
+class PasswordUpdate(BaseModel):
+    old_password: str
+    new_password: str

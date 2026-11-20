@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevSpace — пространство разработчиков</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<header class="header">
+    <a href="/" class="logo">DevSpace<span>.</span></a>
+
+    <nav class="navigation">
+        <a href="#feed">Лента</a>
+        <a href="#courses">Курсы</a>
+        <a href="/docs">API</a>
+    </nav>
+
+    <div class="header-actions">
+        <a href="/login" class="login-link">Войти</a>
+        <button class="create-button" onclick="openCreateMenu()">Создать +</button>
+    </div>
+</header>
+
+<main class="container">
+    <section class="intro">
+        <p class="eyebrow">СООБЩЕСТВО РАЗРАБОТЧИКОВ</p>
+        <h1>Учись. Создавай.<br>Делись опытом.</h1>
+        <p class="intro-text">
+            Курсы, проекты, статьи и идеи в одном пространстве.
+        </p>
+    </section>
+
+    <section class="feed-section" id="feed">
+        <div class="feed-heading">
+            <h2>Лента сообщества</h2>
+            <span id="materials-count">Загрузка...</span>
+        </div>
+
+        <div id="feed-container" class="feed">
+            <p class="loading">Загружаем публикации...</p>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>DevSpace © 2026</p>
+</footer>
+
+<script src="/static/js/home.js"></script>
+</body>
+</html>

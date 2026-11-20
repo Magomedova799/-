@@ -124,8 +124,8 @@ def poll_delete(
     current_user: User = Depends(get_current_user) 
 ):
     poll = db.query(poll).filter(
-        poll.id == poll_id,
-        poll.user_id == current_user.id
+        Poll.id == poll_id,
+        Poll.user_id == current_user.id
     ).first()
 
     if poll is None:
@@ -136,11 +136,3 @@ def poll_delete(
 
     return {"message": "Опрос успешно удален"}
 
-# @router.put("/{poll_id}/editing",response_model=PollRead)
-# def update_poll(
-#     poll_id: int,
-#     data: PollCreate,
-#     db: Session = Depends(get_db),
-#     current_user: User = Depends(get_current_user)
-# ):
-#     ...
