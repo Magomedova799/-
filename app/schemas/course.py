@@ -16,6 +16,7 @@ class CourseRead(BaseModel):
     title: str
     description: str
     price: Decimal
+    image_url: str | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
