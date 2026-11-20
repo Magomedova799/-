@@ -1,54 +1,49 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevSpace — пространство разработчиков</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevSpace — пространство разработчиков</title>
+<link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-
 <header class="header">
-    <a href="/" class="logo">DevSpace<span>.</span></a>
-
-    <nav class="navigation">
-        <a href="#feed">Лента</a>
-        <a href="#courses">Курсы</a>
-        <a href="/docs">API</a>
-    </nav>
-
-    <div class="header-actions">
-        <a href="/login" class="login-link">Войти</a>
-        <a href="/register" class="create-button">Регистрация</a>
-        <button class="create-button" onclick="openCreateMenu()">Создать +</button>
-    </div>
+<a href="/" class="logo">DevSpace<span>.</span></a>
+<nav class="navigation">
+<a href="/" data-filter="all">Все</a>
+<a href="/?type=courses" data-filter="courses">Курсы</a>
+<a href="/?type=articles" data-filter="articles">Статьи</a>
+<a href="/?type=projects" data-filter="projects">Проекты</a>
+<a href="/?type=polls" data-filter="polls">Опросы</a>
+<a href="/search">Поиск</a>
+<a href="/docs">API</a>
+</nav>
+<div class="header-actions" id="account-nav">
+<a href="/login" class="login-link">Войти</a>
+<a href="/register" class="create-button">Регистрация</a>
+<button class="create-button" onclick="openCreateMenu()">Создать +</button>
+</div>
 </header>
-
 <main class="container">
-    <section class="intro">
-        <p class="eyebrow">СООБЩЕСТВО РАЗРАБОТЧИКОВ</p>
-        <h1>Учись. Создавай.<br>Делись опытом.</h1>
-        <p class="intro-text">
-            Курсы, проекты, статьи и идеи в одном пространстве.
-        </p>
-    </section>
-
-    <section class="feed-section" id="feed">
-        <div class="feed-heading">
-            <h2>Лента сообщества</h2>
-            <span id="materials-count">Загрузка...</span>
-        </div>
-
-        <div id="feed-container" class="feed">
-            <p class="loading">Загружаем публикации...</p>
-        </div>
-    </section>
+<section class="intro">
+<p class="eyebrow">СООБЩЕСТВО РАЗРАБОТЧИКОВ</p>
+<h1>Учись. Создавай.<br>Делись опытом.</h1>
+<p class="intro-text">Курсы, проекты, статьи и идеи в одном пространстве.</p>
+</section>
+<section class="feed-section" id="feed">
+<div class="feed-toolbar">
+<div class="feed-heading"><h2>Лента сообщества</h2><span id="materials-count">Загрузка...</span></div>
+<form id="quick-search" class="quick-search"><input name="q" placeholder="Найти курс, статью, проект..."><button>Найти</button></form>
+</div>
+<div class="feed-filters" id="feed-filters">
+<button data-filter="all" class="active">Все материалы</button>
+<button data-filter="courses">Курсы</button>
+<button data-filter="articles">Статьи</button>
+<button data-filter="projects">Проекты</button>
+<button data-filter="polls">Опросы</button>
+</div>
+<div id="feed-container" class="feed"><p class="loading">Загружаем публикации...</p></div>
+</section>
 </main>
-
-<footer>
-    <p>DevSpace © 2026</p>
-</footer>
-
+<footer><p>DevSpace © 2026</p></footer>
 <script src="/static/js/home.js"></script>
-</body>
-</html>
+</body></html>
