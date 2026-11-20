@@ -5,7 +5,7 @@ from app.dependencies import get_db, get_current_user
 from app.models.course import Course
 from app.models.user import User
 from app.schemas.course import CourseRead, CourseCreate
-
+from app.models.lesson import Lesson
 
 router = APIRouter(prefix="/courses", tags=["Курсы"])
 
@@ -52,19 +52,64 @@ def get_course_by_id(
 
     return course
 
+
 @router.delete("/{course_id}/delete")
-def delete_course(course_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_course(
+    course_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     course = db.query(Course).filter(
         Course.id == course_id,
-        course.user_id == current_user.id
-    ).filter()
+        Course.user_id == current_user.id
+    ).first()
 
     if course is None:
-        raise HTTPException(status_code=404, detail="Курс не найден")
+        raise HTTPException(
+            status_code=404,
+            detail="Курс не найден"
+        )
+
+    lessons = db.query(Lesson).filter(
+        Lesson.course_id == course_id
+    ).first()
+
+    if lessons is not None:
+        raise HTTPException(
+            status_code=400,
+            detail="Сначала удалите уроки курса"
+        )
 
     db.delete(course)
     db.commit()
 
-    return {"message": "Курс удален"}
+    return {"message": "Курс успешно удалён"}
+
+
+
+@router.put("/{course_id}", response_model=CourseRead)
+def update_course(
+    course_id: int,
+    data: CourseCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    course = db.query(Course).filter(
+        Course.id == course_id,
+        Course.user_id == current_user.id
+    ).first()
+
+    if course is None:
+        raise HTTPException(404, "Курс не найден")
+
+    course.title = data.title
+    course.description = data.description
+    course.price = data.price
+
+    db.commit()
+    db.refresh(course)
+
+    return course
+
     
     

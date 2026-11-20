@@ -48,3 +48,14 @@ def get_current_user(
         )
 
     return user
+
+def get_admin_user(
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=403,
+            detail="Недостаточно прав. Только администратор может управлять категориями."
+        )
+
+    return current_user

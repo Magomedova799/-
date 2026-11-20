@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy import String, Text, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
+from sqlalchemy import String, Text, DateTime, func, Enum
 
 class User(Base):
     __tablename__ = "users"
@@ -14,3 +15,4 @@ class User(Base):
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String(500),nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now())
+    role: Mapped[str] = mapped_column(Enum("user", "admin", name="user_roles"),default="user",nullable=False)

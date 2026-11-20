@@ -18,4 +18,11 @@ class LessonRead(BaseModel):
     image_url: str | None = None
     video_url: str | None = None
 
+
+class LessonUpdate(BaseModel):
+    title: str = Field(min_length=3, max_length=200)
+    content: str = Field(min_length=10)
+    position: int = Field(ge=1)
+    video_url: str | None = None
+
     model_config = {"from_attributes": True}

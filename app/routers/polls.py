@@ -114,3 +114,33 @@ def close_poll(
     db.commit()
 
     return {"message": "Опрос закрыт"}
+
+
+
+@router.delete("/{poll_id}/delete")
+def poll_delete(
+    poll_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user) 
+):
+    poll = db.query(poll).filter(
+        poll.id == poll_id,
+        poll.user_id == current_user.id
+    ).first()
+
+    if poll is None:
+        raise HTTPException(status_code=404, detail="Опросы не найдены")
+
+    db.delete(poll)
+    db.commit()
+
+    return {"message": "Опрос успешно удален"}
+
+# @router.put("/{poll_id}/editing",response_model=PollRead)
+# def update_poll(
+#     poll_id: int,
+#     data: PollCreate,
+#     db: Session = Depends(get_db),
+#     current_user: User = Depends(get_current_user)
+# ):
+#     ...

@@ -8,7 +8,7 @@ from app.dependencies import get_db, get_current_user
 from app.models.lesson import Lesson
 from app.models.course import Course
 from app.models.user import User
-from app.schemas.lesson import LessonRead
+from app.schemas.lesson import LessonRead, LessonUpdate
 
 
 router = APIRouter(prefix="/lessons", tags=["Уроки"])
@@ -22,6 +22,7 @@ async def create_lessons(
     position: int = Form(...),
     video_url: str | None = Form(None),
     image: UploadFile | None = File(None),
+    video: UploadFile | None = File(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -38,6 +39,7 @@ async def create_lessons(
 
     image_url = None
 
+    
     if image is not None:
         allowed_types = {
             "image/jpeg": ".jpg",
@@ -62,6 +64,49 @@ async def create_lessons(
 
         image_url = f"/static/uploads/lessons/photos/{filename}"
 
+    
+    if video is not None:
+        if video.content_type != "video/mp4":
+            raise HTTPException(
+                status_code=400,
+                detail="Разрешены только видео MP4"
+            )
+
+        max_size = 100 * 1024 * 1024  
+
+        upload_dir = Path("static/uploads/lessons/videos")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+        filename = f"{uuid.uuid4()}.mp4"
+        file_path = upload_dir / filename
+
+        file_size = 0
+
+        try:
+            with file_path.open("wb") as file:
+                while True:
+                    chunk = await video.read(1024 * 1024)  # 1 МБ
+
+                    if not chunk:
+                        break
+
+                    file_size += len(chunk)
+
+                    if file_size > max_size:
+                        raise HTTPException(
+                            status_code=413,
+                            detail="Видео не должно превышать 100 МБ"
+                        )
+
+                    file.write(chunk)
+
+        except Exception:
+            if file_path.exists():
+                file_path.unlink()
+            raise
+
+        video_url = f"/static/uploads/lessons/videos/{filename}"
+
     lesson = Lesson(
         course_id=course_id,
         title=title,
@@ -81,6 +126,7 @@ async def create_lessons(
 @router.get("/all", response_model=list[LessonRead])
 def get_lessons(db: Session = Depends(get_db)):
     return db.query(Lesson).order_by(Lesson.id.desc()).all()
+
 
 @router.get("/{lesson_id}", response_model=LessonRead)
 def get_lesson_by_id(
@@ -110,7 +156,11 @@ def get_lessons_by_course(
 
 
 @router.delete("/{lesson_id}/delete")
-def delete_lesson(lesson_id: int,db: Session = Depends(get_db),current_user: User = Depends(get_current_user)):
+def delete_lesson(
+    lesson_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     lesson = db.query(Lesson).filter(
         Lesson.id == lesson_id,
         Lesson.course_id.in_(
@@ -130,3 +180,36 @@ def delete_lesson(lesson_id: int,db: Session = Depends(get_db),current_user: Use
     db.commit()
 
     return {"message": "Урок удален"}
+
+
+@router.put("/{lesson_id}", response_model=LessonRead)
+def update_lesson(
+    lesson_id: int,
+    data: LessonUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    lesson = db.query(Lesson).filter(
+        Lesson.id == lesson_id
+    ).first()
+
+    if lesson is None:
+        raise HTTPException(404, "Урок не найден")
+
+    course = db.query(Course).filter(
+        Course.id == lesson.course_id,
+        Course.user_id == current_user.id
+    ).first()
+
+    if course is None:
+        raise HTTPException(403, "Нет доступа к уроку")
+
+    lesson.title = data.title
+    lesson.content = data.content
+    lesson.position = data.position
+    lesson.video_url = data.video_url
+
+    db.commit()
+    db.refresh(lesson)
+
+    return lesson

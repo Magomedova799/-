@@ -12,6 +12,8 @@ from app.routers.polls import router as polls_router
 from app.routers.articles import router as articles_router
 from app.routers.lessons import router as lessons_router
 from app.routers.courses import router as courses_router
+from app.routers import assignments
+from app.routers import tests
 
 app = FastAPI(
     title="DevSpace API",
@@ -31,3 +33,5 @@ app.include_router(polls_router)
 app.include_router(articles_router)
 app.include_router(lessons_router)
 app.include_router(courses_router)
+app.include_router(assignments.router)
+app.include_router(tests.router)
