@@ -617,7 +617,8 @@ function safeURL(value) {
 // ==============================
 
 function openCreateMenu() {
-    alert("Создание публикаций скоро появится!");
+    if (localStorage.getItem("access_token")) location.href = "/create";
+    else location.href = "/login";
 }
 
 // ==============================
