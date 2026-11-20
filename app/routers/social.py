@@ -10,6 +10,7 @@ from app.models.user import User
 from app.models.course import Course
 from app.models.article import Article
 from app.models.project import Project
+from app.models.poll import Poll
 
 
 router = APIRouter(tags=["Подписки, лайки и комментарии"])
@@ -33,6 +34,8 @@ def get_content_field(target_type: str):
         return "article_id", Article
     if target_type == "projects":
         return "project_id", Project
+    if target_type == "polls":
+        return "poll_id", Poll
 
     raise HTTPException(status_code=400, detail="Неверный тип объекта")
 
