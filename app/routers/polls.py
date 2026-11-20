@@ -123,7 +123,7 @@ def poll_delete(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user) 
 ):
-    poll = db.query(poll).filter(
+    poll = db.query(Poll).filter(
         Poll.id == poll_id,
         Poll.user_id == current_user.id
     ).first()
