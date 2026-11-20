@@ -15,6 +15,7 @@ class ArticleRead(BaseModel):
     title: str
     content: str
     category_id: int | None = None
+    image_url: str | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
