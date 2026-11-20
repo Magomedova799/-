@@ -14,6 +14,7 @@ class Comment(Base):
     course_id: Mapped[int | None] = mapped_column(ForeignKey("courses.id"), nullable=True)
     article_id: Mapped[int | None] = mapped_column(ForeignKey("articles.id"), nullable=True)
     project_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id"), nullable=True)
+    poll_id: Mapped[int | None] = mapped_column(ForeignKey("polls.id"), nullable=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
@@ -21,6 +22,7 @@ class Comment(Base):
         CheckConstraint(
             "((course_id IS NOT NULL)::int + "
             "(article_id IS NOT NULL)::int + "
-            "(project_id IS NOT NULL)::int) = 1"
+            "(project_id IS NOT NULL)::int + "
+            "(poll_id IS NOT NULL)::int) = 1"
         ),
     )
