@@ -8,15 +8,25 @@ from app.dependencies import get_db, get_current_user
 from app.models.project import Project
 from app.models.user import User
 from app.schemas.project import ProjectCreate, ProjectRead
-
+from fastapi.responses import RedirectResponse
+from fastapi import Request
+from fastapi.templating import Jinja2Templates
 
 router = APIRouter(
     prefix="/projects",
     tags=["Проекты"]
 )
+templates = Jinja2Templates(directory="templates")
 
+@router.get("/create-page")
+def project_create_page(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="project_create.html",
+        context={}
+    )
 
-@router.post("/create", response_model=ProjectRead)
+@router.post("/create")
 def create_project(
     title: str = Form(...),
     description: str = Form(...),
@@ -30,8 +40,12 @@ def create_project(
 ):
     image_url = None
 
-    if file:
-        allowed_types = ["image/jpeg", "image/png", "image/webp"]
+    if file and file.filename:
+        allowed_types = {
+            "image/jpeg": ".jpg",
+            "image/png": ".png",
+            "image/webp": ".webp"
+        }
 
         if file.content_type not in allowed_types:
             raise HTTPException(
@@ -39,8 +53,7 @@ def create_project(
                 detail="Разрешены только JPG, PNG и WEBP"
             )
 
-        extension = os.path.splitext(file.filename)[1].lower()
-
+        extension = allowed_types[file.content_type]
         filename = f"{uuid.uuid4()}{extension}"
 
         upload_dir = "static/uploads"
@@ -58,8 +71,8 @@ def create_project(
         description=description,
         technologies=technologies,
         category_id=category_id,
-        github_url=github_url,
-        demo_url=demo_url,
+        github_url=github_url or None,
+        demo_url=demo_url or None,
         image_url=image_url,
         user_id=current_user.id
     )
@@ -68,12 +81,20 @@ def create_project(
     db.commit()
     db.refresh(project)
 
-    return project
+    return RedirectResponse(
+        url="/",
+        status_code=303
+    )
+
 
 
 @router.get("/", response_model=list[ProjectRead])
 def get_projects(db: Session = Depends(get_db)):
-    projects = db.query(Project).order_by(Project.id.desc()).all()
+    projects = (
+        db.query(Project)
+        .order_by(Project.id.desc())
+        .all()
+    )
     return projects
 
 @router.get("/search/projects", response_model=list[ProjectRead])
@@ -157,3 +178,33 @@ def delete_project(
     db.commit()
 
     return {"message": "Проект успешно удалён"}
+
+
+@router.get("/project/{project_id}")
+def project_page(
+    project_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    project = db.query(Project).filter(
+        Project.id == project_id
+    ).first()
+
+    if project is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Проект не найден"
+        )
+
+    author = db.query(User).filter(
+        User.id == project.user_id
+    ).first()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="project_detail.html",
+        context={
+            "project": project,
+            "author": author
+        }
+    )

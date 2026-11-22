@@ -3,51 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevSpace — пространство разработчиков</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+
+    <title>DevSpace</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
 </head>
+
 <body>
 
-<header class="header">
-    <a href="/" class="logo">DevSpace<span>.</span></a>
+<aside class="sidebar">
+
+    <a href="/" class="logo">DevSpace</a>
 
     <nav class="navigation">
-        <a href="#feed">Лента</a>
-        <a href="#courses">Курсы</a>
-        <a href="/docs">API</a>
+        <a href="#courses">курсы</a>
+        <a href="#projects">проекты</a>
+        <a href="#articles">статьи</a>
+        <a href="#likes">лайки</a>
+        <a href="/profile">профиль</a>
     </nav>
 
-    <div class="header-actions">
-        <a href="/login" class="login-link">Войти</a>
-        <button class="create-button" onclick="openCreateMenu()">Создать +</button>
+    <div class="sidebar-bottom">
+        {% if user %}
+            <span class="username">{{ user.username }}</span>
+            {% if user %}
+    <span class="username">{{ user.username }}</span>
+
+    <form action="/logout" method="post">
+        <button type="submit" class="auth-link">выйти</button>
+    </form>
+{% else %}
+    <a href="/login" class="auth-link">
+        войти /<br>
+        зарегистрироваться
+    </a>
+{% endif %}
+        {% else %}
+            <a href="/login" class="auth-link">
+                войти /<br>
+                зарегистрироваться
+            </a>
+        {% endif %}
     </div>
-</header>
 
-<main class="container">
-    <section class="intro">
-        <p class="eyebrow">СООБЩЕСТВО РАЗРАБОТЧИКОВ</p>
-        <h1>Учись. Создавай.<br>Делись опытом.</h1>
-        <p class="intro-text">
-            Курсы, проекты, статьи и идеи в одном пространстве.
+</aside>
+
+
+<main class="main">
+
+    <header class="header">
+        <span class="header-label">DEVELOPER COMMUNITY</span>
+
+        {% if user %}
+            <a href="/create" class="create-button">+ создать</a>
+        {% else %}
+            <a href="/login" class="create-button">+ создать</a>
+        {% endif %}
+    </header>
+
+
+    <section class="hero">
+
+        <p class="hero-label">YOUR DIGITAL SPACE</p>
+
+        <h1>
+            Учись.<br>
+            Создавай.<br>
+            <span>Делись опытом.</span>
+        </h1>
+
+        <p class="hero-description">
+            Пространство для разработчиков,
+            где знания превращаются в проекты.
         </p>
+
     </section>
 
-    <section class="feed-section" id="feed">
-        <div class="feed-heading">
-            <h2>Лента сообщества</h2>
-            <span id="materials-count">Загрузка...</span>
+
+    <!-- КУРСЫ -->
+
+    <section class="section" id="courses">
+
+        <div class="section-heading">
+            <span class="section-number">01 / EDUCATION</span>
+            <h2>Курсы</h2>
         </div>
 
-        <div id="feed-container" class="feed">
-            <p class="loading">Загружаем публикации...</p>
+        <div class="card-grid">
+
+            {% for course in courses %}
+
+                <article class="card">
+
+                    <div class="card-top">
+                        <span>COURSE</span>
+                        <span>#{{ course.id }}</span>
+                    </div>
+
+                    <h3>{{ course.title }}</h3>
+
+                    <p>{{ course.description }}</p>
+
+                    <div class="card-bottom">
+                        {% if course.price == 0 %}
+                            <span>Бесплатно</span>
+                        {% else %}
+                            <span>{{ course.price }} ₽</span>
+                        {% endif %}
+
+                        <a href="/courses/page/{{ course.id }}">Подробнее</a>
+                    </div>
+
+                </article>
+
+            {% else %}
+
+                <div class="empty-card">
+                    Курсов пока нет.
+                </div>
+
+            {% endfor %}
+
         </div>
+
     </section>
-</main>
 
+
+    <!-- ПРОЕКТЫ -->
+
+    <section class="section" id="projects">
+
+        <div class="section-heading">
+            <span class="section-number">02 / PORTFOLIO</span>
+            <h2>Проекты</h2>
+        </div>
+
+        <div class="card-grid">
+
+            {% for project in projects %}
+
+                <article class="card">
+
+                    {% if project.image_url %}
+                        <img
+                            src="{{ project.image_url }}"
+                            class="card-image"
+                            alt="{{ project.title }}"
+                        >
+                    {% endif %}
+
+                    <div class="card-top">
+                        <span>PROJECT</span>
+                    </div>
+
+                    <h3>{{ project.title }}</h3>
+
+<p class="project-author">
+    Автор: {{ project.user.username }}
+</p>
+
+<p>{{ project.description }}</p>
+
+                    <div class="technologies">
+                        {{ project.technologies }}
+                    </div>
+
+                    <div class="card-bottom">
+
+                        {% if project.github_url %}
+                            <a href="{{ project.github_url }}" target="_blank">
+                                GitHub ↗
+                            </a>
+                        {% endif %}
+
+                        {% if project.demo_url %}
+                            <a href="/projects/project/{{ project.id }}">Подробнее ↗</a>
+                        {% endif %}
+
+                    </div>
+
+                </article>
+
+            {% else %}
+
+                <div class="empty-card">
+                    Проектов пока нет.
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- СТАТЬИ -->
+
+    <section class="section" id="articles">
+
+        <div class="section-heading">
+            <span class="section-number">03 / KNOWLEDGE</span>
+            <h2>Статьи</h2>
+        </div>
+
+        <div class="card-grid">
+
+            {% for article in articles %}
+
+                <article class="card">
+
+                    <div class="card-top">
+                        <span>ARTICLE</span>
+                    </div>
+
+                    <h3>{{ article.title }}</h3>
+
+                    <p>
+                        {{ article.content[:250] }}
+                        {% if article.content|length > 250 %}...{% endif %}
+                    </p>
+
+                    <div class="card-bottom">
+                        <span>Статья</span>
+                        <a href="/articles/article/{{ article.id }}">Подробнее</a>
+                    </div>
+
+                </article>
+
+            {% else %}
+
+                <div class="empty-card">
+                    Статей пока нет.
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
 <footer>
-    <p>DevSpace © 2026</p>
+    <span>DevSpace</span>
+    <span>Учись. Создавай. Делись.</span>
 </footer>
 
-<script src="/static/js/home.js"></script>
+</main>
+
 </body>
 </html>

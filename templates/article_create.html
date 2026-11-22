@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создать статью — DevSpace</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <main class="create-container">
+        <h1>Создать статью</h1>
+        <form action="/articles/create-form" method="post">
+            <label>Название статьи</label>
+            <input name="title" required minlength="3">
+
+            <label>Текст статьи</label>
+            <textarea name="content" required minlength="10" rows="12"></textarea>
+
+            <label>ID категории (необязательно)</label>
+            <input type="number" name="category_id">
+
+            <button type="submit">Опубликовать</button>
+        </form>
+        <a href="/create">Назад</a>
+    </main>
+</body>
+</html>

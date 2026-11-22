@@ -1,5 +1,6 @@
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db, get_current_user
@@ -20,6 +21,8 @@ router = APIRouter(
     prefix="/tests",
     tags=["Тесты"]
 )
+
+templates = Jinja2Templates(directory="templates")
 
 
 
@@ -61,14 +64,19 @@ def create_test(
 
         for option in question.options:
             if not option.strip():
-                raise HTTPException(400, "Варианты ответов не должны быть пустыми")
+                raise HTTPException(
+                    400,
+                    "Варианты ответов не должны быть пустыми"
+                )
 
         if (
             question.correct_option_index < 0
             or question.correct_option_index >= len(question.options)
         ):
-            raise HTTPException(400, "Выберите правильный вариант ответа")
-
+            raise HTTPException(
+                400,
+                "Выберите правильный вариант ответа"
+            )
 
     test = LessonTest(
         lesson_id=data.lesson_id,
@@ -120,6 +128,15 @@ def get_lesson_tests(
     return tests
 
 
+@router.get("/my-results", response_model=list[TestResultRead])
+def get_my_results(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return db.query(TestAttempt).filter(
+        TestAttempt.user_id == current_user.id
+    ).order_by(TestAttempt.created_at.desc()).all()
+
 
 @router.get("/{test_id}")
 def get_test(
@@ -153,7 +170,6 @@ def get_test(
             for question in questions
         ]
     }
-
 
 
 @router.post("/{test_id}/submit", response_model=TestResultRead)
@@ -216,14 +232,81 @@ def submit_test(
     return attempt
 
 
-@router.get("/my-results", response_model=list[TestResultRead])
-def get_my_results(
+@router.post("/{test_id}/submit-form")
+async def submit_test_form(
+    test_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return db.query(TestAttempt).filter(
-        TestAttempt.user_id == current_user.id
-    ).order_by(TestAttempt.created_at.desc()).all()
+    test = db.query(LessonTest).filter(
+        LessonTest.id == test_id
+    ).first()
+
+    if test is None:
+        raise HTTPException(404, "Тест не найден")
+
+    questions = db.query(TestQuestion).filter(
+        TestQuestion.test_id == test_id
+    ).order_by(TestQuestion.position.asc()).all()
+
+    if not questions:
+        raise HTTPException(400, "В тесте нет вопросов")
+
+    form = await request.form()
+
+    answers = []
+    score = 0
+
+    for question in questions:
+        answer_value = form.get(f"question_{question.id}")
+
+        if answer_value is None:
+            raise HTTPException(
+                400,
+                detail=f"Ответьте на вопрос: {question.question}"
+            )
+
+        try:
+            answer = int(answer_value)
+        except (ValueError, TypeError):
+            raise HTTPException(
+                400,
+                detail="Некорректный вариант ответа"
+            )
+
+        if answer < 0 or answer >= len(question.options):
+            raise HTTPException(
+                400,
+                detail="Несуществующий вариант ответа"
+            )
+
+        answers.append(answer)
+
+        if answer == question.correct_option_index:
+            score += 1
+
+    attempt = TestAttempt(
+        test_id=test.id,
+        user_id=current_user.id,
+        answers=answers,
+        score=score,
+        total_questions=len(questions)
+    )
+
+    db.add(attempt)
+    db.commit()
+    db.refresh(attempt)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="test_result.html",
+        context={
+            "test": test,
+            "score": score,
+            "total_questions": len(questions)
+        }
+    )
 
 
 
@@ -261,7 +344,6 @@ def delete_test(
     ).delete()
 
     db.delete(test)
-
     db.commit()
 
     return {"message": "Тест успешно удалён"}

@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мой профиль — DevSpace</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="logo">DevSpace</div>
+
+    <nav class="navigation">
+        <a href="/">Главная</a>
+        <a href="/#courses">Курсы</a>
+        <a href="/#projects">Проекты</a>
+        <a href="/#articles">Статьи</a>
+        <a href="/#polls">Опросы</a>
+        <a href="/profile" class="active">Мой профиль</a>
+    </nav>
+</aside>
+
+<main class="main">
+
+    <header class="header">
+        <span class="header-label">ЛИЧНЫЙ КАБИНЕТ</span>
+        <div class="profile-actions">
+    <a href="/profile/edit" class="create-button">Редактировать профиль</a>
+    <a href="/" class="create-button">На главную</a>
+</div>
+    </header>
+
+    <section class="profile-header">
+
+        <div class="profile-info">
+            {% if user.avatar_url %}
+                <img src="{{ user.avatar_url }}" alt="Аватар" class="profile-avatar">
+            {% else %}
+                <div class="profile-avatar profile-placeholder">
+                    {{ user.username[0]|upper }}
+                </div>
+            {% endif %}
+
+            <div>
+                <h1>{{ user.username }}</h1>
+                <p class="profile-email">{{ user.email }}</p>
+
+                {% if user.bio %}
+                    <p class="profile-bio">{{ user.bio }}</p>
+                {% else %}
+                    <p class="profile-bio">Расскажи немного о себе.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <form action="/logout" method="post">
+            <button type="submit" class="logout-button">Выйти</button>
+        </form>
+
+    </section>
+
+    <section class="profile-statistics">
+
+        <div class="stat-card">
+            <span>Публикации</span>
+            <strong>{{ publications_count }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Подписки</span>
+            <strong>{{ subscriptions_count }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Лайки</span>
+            <strong>{{ likes_count }}</strong>
+        </div>
+
+    </section>
+
+    <section class="profile-section">
+        <h2>Мои курсы</h2>
+
+        {% if courses %}
+            <div class="card-grid">
+                {% for course in courses %}
+                    <article class="card">
+                        <div class="card-top">
+                            <span>КУРС</span>
+                        </div>
+                        <h3>{{ course.title }}</h3>
+                        <p>{{ course.description }}</p>
+                        <div class="card-bottom">
+                            <span>{{ course.price }} ₽</span>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="profile-empty">Ты пока не создал(а) ни одного курса.</p>
+        {% endif %}
+    </section>
+
+    <section class="profile-section">
+        <h2>Мои проекты</h2>
+
+        {% if projects %}
+            <div class="card-grid">
+                {% for project in projects %}
+                    <article class="card">
+                        <div class="card-top">
+                            <span>ПРОЕКТ</span>
+                        </div>
+                        <h3>{{ project.title }}</h3>
+                        <p>{{ project.description }}</p>
+                        <div class="card-bottom">
+                            <span>{{ project.technologies }}</span>
+                        </div>
+                        {% if project.github_url %}
+                            <a href="{{ project.github_url }}" target="_blank">GitHub</a>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="profile-empty">Ты пока не создал(а) ни одного проекта.</p>
+        {% endif %}
+    </section>
+
+    <section class="profile-section">
+        <h2>Мои статьи</h2>
+
+        {% if articles %}
+            <div class="card-grid">
+                {% for article in articles %}
+                    <article class="card">
+                        <div class="card-top">
+                            <span>СТАТЬЯ</span>
+                        </div>
+                        <h3>{{ article.title }}</h3>
+                        <p>{{ article.content }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="profile-empty">Ты пока не написал(а) статей.</p>
+        {% endif %}
+    </section>
+
+    <section class="profile-section">
+        <h2>Мои опросы</h2>
+
+        {% if polls %}
+            <div class="card-grid">
+                {% for poll in polls %}
+                    <article class="card">
+                        <div class="card-top">
+                            <span>ОПРОС</span>
+                        </div>
+                        <h3>{{ poll.question }}</h3>
+                        <p>
+                            {% if poll.is_active %}
+                                Активен
+                            {% else %}
+                                Завершён
+                            {% endif %}
+                        </p>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="profile-empty">Ты пока не создал(а) опросов.</p>
+        {% endif %}
+    </section>
+
+    <section class="profile-section">
+        <h2>Подписки на авторов</h2>
+
+        {% if author_subscriptions %}
+            <div class="card-grid">
+                {% for subscription, author in author_subscriptions %}
+                    <article class="card">
+                        <h3>{{ author.username }}</h3>
+                        <p>{{ author.email }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="profile-empty">Пока нет подписок на авторов.</p>
+        {% endif %}
+    </section>
+
+    <section class="profile-section">
+        <h2>Подписки на курсы</h2>
+
+        {% if course_subscriptions %}
+            <div class="card-grid">
+                {% for subscription, course in course_subscriptions %}
+                    <article class="card">
+                        <h3>{{ course.title }}</h3>
+                        <p>{{ course.description }}</p>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="profile-empty">Пока нет подписок на курсы.</p>
+        {% endif %}
+    </section>
+
+</main>
+
+</body>
+</html>

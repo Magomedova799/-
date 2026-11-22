@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Результат теста | DevSpace</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        .result-content {
+            max-width: 700px;
+            padding: 60px 0;
+        }
+
+        .result-card {
+            margin-top: 25px;
+            padding: 30px;
+            background: #1b1b1b;
+            border: 1px solid #303030;
+            border-radius: 12px;
+        }
+
+        .result-score {
+            font-size: 32px;
+            margin: 25px 0;
+            color: #a78bfa;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
+            background: #7c5cff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>DevSpace</h2>
+
+    <nav class="navigation">
+        <a href="/">Главная</a>
+        <a href="/#courses">Курсы</a>
+        <a href="/profile">Профиль</a>
+    </nav>
+</div>
+
+<div class="main">
+    <div class="result-content">
+
+        <h1>Результат теста</h1>
+
+        <div class="result-card">
+
+            <h2>{{ test.title }}</h2>
+
+            <div class="result-score">
+                {{ score }} из {{ total_questions }}
+            </div>
+
+            <p style="color: #aaa;">
+                Правильных ответов: {{ score }}.
+                Всего вопросов: {{ total_questions }}.
+            </p>
+
+            <a
+                href="/lessons/page/{{ test.lesson_id }}"
+                class="back-button"
+            >
+                Вернуться к уроку
+            </a>
+
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

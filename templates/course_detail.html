@@ -1,0 +1,137 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ course.title }} — DevSpace</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .course-detail {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+        }
+
+        .course-header {
+            padding: 30px;
+            border-radius: 16px;
+            background: var(--card-bg, #ffffff);
+            margin-bottom: 25px;
+        }
+
+        .course-header h1 {
+            margin: 0 0 15px;
+            font-size: 30px;
+        }
+
+        .course-description {
+            line-height: 1.7;
+            color: var(--text-secondary, #777);
+        }
+
+        .course-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .lessons-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .lesson-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            border-radius: 12px;
+            background: var(--card-bg, #ffffff);
+            text-decoration: none;
+            color: inherit;
+            transition: transform 0.2s;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .lesson-number {
+            font-weight: bold;
+            color: #777;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .empty-message {
+            padding: 25px;
+            border-radius: 12px;
+            background: var(--card-bg, #ffffff);
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="course-detail">
+
+    <a href="/" class="back-link">← Вернуться на главную</a>
+
+    <section class="course-header">
+        <h1>{{ course.title }}</h1>
+
+        <p class="course-description">
+            {{ course.description }}
+        </p>
+
+        <div class="course-meta">
+            <span>Уроков: {{ lessons|length }}</span>
+            <span>
+                {% if course.price and course.price > 0 %}
+                    Цена: {{ course.price }}
+                {% else %}
+                    Бесплатный курс
+                {% endif %}
+            </span>
+        </div>
+    </section>
+
+    <section>
+        <h2>Программа курса</h2>
+
+        {% if lessons %}
+            <div class="lessons-list">
+                {% for lesson in lessons %}
+                    <a href="/lessons/page/{{ lesson.id }}" class="lesson-card">
+                        <div>
+                            <span class="lesson-number">
+                                Урок {{ lesson.position }}
+                            </span>
+                            <h3>{{ lesson.title }}</h3>
+                        </div>
+
+                        <span>Открыть →</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-message">
+                В этом курсе пока нет уроков.
+            </div>
+        {% endif %}
+    </section>
+
+</div>
+
+</body>
+</html>
+```

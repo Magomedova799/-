@@ -1,15 +1,17 @@
-from collections.abc import Generator
-from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import JWTError, jwt  # type: ignore[reportMissingImports]
-from sqlalchemy.orm import Session
 
+from collections.abc import Generator
+
+from fastapi import Depends, HTTPException, Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.orm import Session
+from jose import JWTError, jwt
+
+from app.database import SessionLocal
 from app.core.config import SECRET_KEY, ALGORITHM
 from app.models.user import User
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
+
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -21,10 +23,21 @@ def get_db() -> Generator[Session, None, None]:
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
     db: Session = Depends(get_db)
 ) -> User:
-    token = credentials.credentials
+
+    token = credentials.credentials if credentials else None
+
+    if not token:
+        token = request.cookies.get("access_token")
+
+    if not token:
+        raise HTTPException(
+            status_code=401,
+            detail="Необходима авторизация"
+        )
 
     try:
         payload = jwt.decode(
@@ -32,7 +45,9 @@ def get_current_user(
             SECRET_KEY,
             algorithms=[ALGORITHM]
         )
+
         user_id = int(payload.get("sub"))
+
     except (JWTError, TypeError, ValueError):
         raise HTTPException(
             status_code=401,
@@ -49,6 +64,7 @@ def get_current_user(
 
     return user
 
+
 def get_admin_user(
     current_user: User = Depends(get_current_user)
 ):
@@ -59,3 +75,27 @@ def get_admin_user(
         )
 
     return current_user
+
+
+def get_optional_user(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    token = request.cookies.get("access_token")
+
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(
+            token,
+            SECRET_KEY,
+            algorithms=[ALGORITHM]
+        )
+
+        user_id = int(payload.get("sub"))
+
+    except (JWTError, TypeError, ValueError):
+        return None
+
+    return db.query(User).filter(User.id == user_id).first()

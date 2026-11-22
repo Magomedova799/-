@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создать урок — DevSpace</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <main class="create-container">
+        <h1>Добавить урок</h1>
+        <form action="/lessons/create" method="post" enctype="multipart/form-data">
+            <label>Курс</label>
+            <select name="course_id" required>
+                <option value="">Выберите курс</option>
+                {% for course in courses %}
+                    <option value="{{ course.id }}">{{ course.title }}</option>
+                {% endfor %}
+            </select>
+
+            <label>Название урока</label>
+            <input name="title" required>
+
+            <label>Содержание</label>
+            <textarea name="content" required rows="10"></textarea>
+
+            <label>Позиция урока</label>
+            <input type="number" name="position" min="1" required>
+
+            <label>Ссылка на видео</label>
+            <input type="url" name="video_url">
+
+            <label>Изображение</label>
+            <input type="file" name="image" accept="image/jpeg,image/png,image/webp">
+
+            <label>Видео MP4</label>
+            <input type="file" name="video" accept="video/mp4">
+
+            <button type="submit">Добавить урок</button>
+        </form>
+        <a href="/create">Назад</a>
+    </main>
+</body>
+</html>
