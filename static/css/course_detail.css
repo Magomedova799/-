@@ -1,0 +1,364 @@
+
+/* =====================================
+   СТРАНИЦА КУРСА
+===================================== */
+
+.course-content {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 35px 0 70px;
+}
+
+/* =====================================
+   НАЗАД
+===================================== */
+
+.back-link {
+    display: inline-block;
+    color: #888;
+    text-decoration: none;
+    font-size: 13px;
+    margin-bottom: 25px;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: #3b82f6;
+}
+
+/* =====================================
+   ЗАГОЛОВОК КУРСА
+===================================== */
+
+.course-header {
+    padding: 35px;
+    background: #050505;
+    border: 1px solid #303030;
+    border-radius: 17px;
+    margin-bottom: 45px;
+    transition: border-color 0.2s ease;
+}
+
+.course-header:hover {
+    border-color: #444;
+}
+
+.course-label {
+    color: #3b82f6;
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.course-header h1 {
+    color: #e5e5e5;
+    font-size: clamp(30px, 5vw, 48px);
+    font-weight: 400;
+    letter-spacing: -1.5px;
+    line-height: 1.2;
+    margin: 18px 0;
+    overflow-wrap: anywhere;
+}
+
+.course-description {
+    color: #aaa;
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+/* =====================================
+   ИНФОРМАЦИЯ О КУРСЕ
+===================================== */
+
+.course-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 25px;
+    color: #bbb;
+    font-size: 13px;
+}
+
+.course-meta span {
+    padding: 9px 13px;
+    background: #111;
+    border: 1px solid #303030;
+    border-radius: 8px;
+}
+
+.course-meta a,
+.comment-author a,
+.sidebar-bottom a {
+    color: #3b82f6;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.course-meta a:hover,
+.comment-author a:hover,
+.sidebar-bottom a:hover {
+    color: #75aaff;
+    text-decoration: underline;
+}
+
+/* =====================================
+   УРОКИ
+===================================== */
+
+.lessons-title {
+    color: #e5e5e5;
+    font-size: 25px;
+    font-weight: 400;
+    margin-bottom: 22px;
+}
+
+.lessons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.lesson-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 24px;
+    background: #050505;
+    border: 1px solid #303030;
+    border-radius: 15px;
+    text-decoration: none;
+    color: #eee;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.lesson-card:hover {
+    border-color: #3b82f6;
+    transform: translateY(-3px);
+}
+
+.lesson-number {
+    color: #3b82f6;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+.lesson-card h3 {
+    color: #e5e5e5;
+    font-size: 19px;
+    font-weight: 400;
+    margin: 15px 0;
+    overflow-wrap: anywhere;
+}
+
+.lesson-description {
+    color: #999;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.lesson-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 18px;
+    padding-top: 15px;
+    border-top: 1px solid #292929;
+    color: #aaa;
+    font-size: 12px;
+}
+
+.lesson-open {
+    margin-top: 20px;
+    color: #3b82f6;
+    font-size: 13px;
+}
+
+/* =====================================
+   ПУСТЫЕ СОСТОЯНИЯ
+===================================== */
+
+.empty-message {
+    padding: 25px;
+    background: #050505;
+    border: 1px solid #303030;
+    border-radius: 14px;
+    color: #888;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* =====================================
+   ЛАЙКИ И КОММЕНТАРИИ
+===================================== */
+
+.social-section {
+    margin-top: 55px;
+}
+
+.social-section h2 {
+    color: #e5e5e5;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.social-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 20px 0 25px;
+    color: #aaa;
+    font-size: 13px;
+}
+
+.social-actions form {
+    margin: 0;
+}
+
+.social-button {
+    display: inline-block;
+    padding: 11px 18px;
+    border: 1px solid #3b82f6;
+    border-radius: 9px;
+    background: transparent;
+    color: #3b82f6;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 13px;
+    transition: 0.2s ease;
+}
+
+.social-button:hover {
+    background: #3b82f6;
+    color: white;
+}
+
+/* =====================================
+   БЛОК КОММЕНТАРИЕВ
+===================================== */
+
+.comments-box {
+    padding: 25px;
+    border: 1px solid #303030;
+    border-radius: 15px;
+    background: #050505;
+}
+
+.comments-box h3 {
+    margin-top: 0;
+    color: #e5e5e5;
+    font-size: 19px;
+    font-weight: 400;
+}
+
+/* =====================================
+   ФОРМА КОММЕНТАРИЯ
+===================================== */
+
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 25px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    min-height: 100px;
+    box-sizing: border-box;
+    padding: 13px;
+    border: 1px solid #303030;
+    border-radius: 9px;
+    background: #080808;
+    color: #e5e5e5;
+    font: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: vertical;
+    transition: border-color 0.2s ease;
+}
+
+.comment-form textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.comment-form textarea::placeholder {
+    color: #666;
+}
+
+.comment-form button {
+    align-self: flex-start;
+}
+
+/* =====================================
+   ОТДЕЛЬНЫЙ КОММЕНТАРИЙ
+===================================== */
+
+.comment-item {
+    padding: 17px 0;
+    border-top: 1px solid #292929;
+}
+
+.comment-author {
+    margin-bottom: 8px;
+    color: #3b82f6;
+    font-size: 13px;
+}
+
+.comment-text {
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.social-hint {
+    color: #888;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.comments-box a {
+    color: #3b82f6;
+    text-decoration: none;
+}
+
+.comments-box a:hover {
+    color: #75aaff;
+}
+
+/* =====================================
+   АДАПТИВНОСТЬ
+===================================== */
+
+@media (max-width: 700px) {
+    .lessons-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .course-header {
+        padding: 23px;
+    }
+
+    .course-content {
+        padding: 25px 15px 50px;
+    }
+
+    .course-header h1 {
+        font-size: 30px;
+    }
+
+    .comments-box {
+        padding: 18px;
+    }
+
+    .social-button {
+        width: 100%;
+        text-align: center;
+    }
+}

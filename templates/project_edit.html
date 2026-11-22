@@ -1,0 +1,60 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование проекта — DevSpace</title>
+</head>
+<body>
+    <main>
+        <h1>Редактирование проекта</h1>
+
+        <form action="/projects/{{ project.id }}/edit" method="post">
+            <label>Название проекта</label>
+            <input
+                type="text"
+                name="title"
+                value="{{ project.title }}"
+                required
+            >
+
+            <label>Описание</label>
+            <textarea name="description" required>{{ project.description }}</textarea>
+
+            <label>Технологии</label>
+            <input
+                type="text"
+                name="technologies"
+                value="{{ project.technologies }}"
+                required
+            >
+
+            <label>ID категории</label>
+            <input
+                type="number"
+                name="category_id"
+                value="{{ project.category_id or '' }}"
+            >
+
+            <label>GitHub</label>
+            <input
+                type="url"
+                name="github_url"
+                value="{{ project.github_url or '' }}"
+            >
+
+            <label>Демо проекта</label>
+            <input
+                type="url"
+                name="demo_url"
+                value="{{ project.demo_url or '' }}"
+            >
+
+            <button type="submit">Сохранить изменения</button>
+        </form>
+
+        <a href="/projects/project/{{ project.id }}">Назад</a>
+    </main>
+</body>
+</html>

@@ -16,7 +16,8 @@ router = APIRouter(
 @router.post("/create", response_model=CategoryRead)
 def create_category(
     data: CategoryCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_admin_user)
 ):
     existing_category = db.query(Category).filter(
         Category.name == data.name
@@ -50,10 +51,10 @@ def update_category(
     category_id: int,
     data: CategoryCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_admin_user)
 ):
     category = db.query(Category).filter(
-        category.id == category_id,
+        Category.id == category_id
     ).first()
 
     if category is None:

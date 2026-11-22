@@ -48,7 +48,12 @@ async def home(
     db=Depends(get_db),
     user: User | None = Depends(get_optional_user)
 ):
-    courses = db.query(Course).all()
+    courses = (
+    db.query(Course)
+    .options(joinedload(Course.user))
+    .order_by(Course.created_at.desc())
+    .all()
+)
 
     projects = (
         db.query(Project)

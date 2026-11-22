@@ -233,6 +233,64 @@
                     </div>
                 {% endif %}
 
+                <section class="social-section">
+    <h2>Обсуждение проекта</h2>
+
+    <div class="social-actions">
+        {% if current_user %}
+            <form method="post"
+                  action="/projects/project/{{ project.id }}/like">
+                <button type="submit" class="social-button">
+                    {% if is_liked %}
+                        ♥ Убрать лайк
+                    {% else %}
+                        ♡ Нравится
+                    {% endif %}
+                </button>
+            </form>
+        {% else %}
+            <a href="/login" class="social-button">
+                Войти, чтобы поставить лайк
+            </a>
+        {% endif %}
+
+        <span>Лайков: {{ likes_count }}</span>
+    </div>
+
+    <div class="comments-box">
+        <h3>Комментарии</h3>
+
+        {% if current_user %}
+            <form method="post"
+                  action="/projects/project/{{ project.id }}/comment"
+                  class="comment-form">
+
+                <textarea name="content"
+                          placeholder="Напиши комментарий..."
+                          maxlength="2000"
+                          required></textarea>
+
+                <button type="submit" class="social-button">
+                    Отправить комментарий
+                </button>
+            </form>
+        {% else %}
+            <p><a href="/login">Войди в аккаунт</a>, чтобы комментировать.</p>
+        {% endif %}
+
+        {% if comments %}
+            {% for comment, username in comments %}
+                <div class="comment-item">
+                    <div class="comment-author">{{ username }}</div>
+                    <div class="comment-text">{{ comment.content }}</div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="social-hint">Комментариев пока нет.</p>
+        {% endif %}
+    </div>
+</section>
+
             </article>
 
         </div>

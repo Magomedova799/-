@@ -10,33 +10,49 @@
 <body>
 
 <aside class="sidebar">
-    <div class="logo">DevSpace</div>
+    <a href="/" class="logo">DevSpace</a>
 
     <nav class="navigation">
         <a href="/">Главная</a>
         <a href="/#courses">Курсы</a>
         <a href="/#projects">Проекты</a>
         <a href="/#articles">Статьи</a>
-        <a href="/#polls">Опросы</a>
         <a href="/profile" class="active">Мой профиль</a>
     </nav>
+
+    <div class="sidebar-bottom">
+        <a href="/users/{{ user.id }}" class="username">
+            {{ user.username }}
+        </a>
+    </div>
 </aside>
 
 <main class="main">
 
     <header class="header">
         <span class="header-label">ЛИЧНЫЙ КАБИНЕТ</span>
+
         <div class="profile-actions">
-    <a href="/profile/edit" class="create-button">Редактировать профиль</a>
-    <a href="/" class="create-button">На главную</a>
-</div>
+            <a href="/profile/edit" class="create-button">
+                Редактировать профиль
+            </a>
+
+            <a href="/" class="create-button">
+                На главную
+            </a>
+        </div>
     </header>
 
+    <!-- ИНФОРМАЦИЯ О ПОЛЬЗОВАТЕЛЕ -->
     <section class="profile-header">
 
         <div class="profile-info">
             {% if user.avatar_url %}
-                <img src="{{ user.avatar_url }}" alt="Аватар" class="profile-avatar">
+                <img
+                    src="{{ user.avatar_url }}"
+                    alt="Аватар"
+                    class="profile-avatar"
+                >
             {% else %}
                 <div class="profile-avatar profile-placeholder">
                     {{ user.username[0]|upper }}
@@ -50,17 +66,26 @@
                 {% if user.bio %}
                     <p class="profile-bio">{{ user.bio }}</p>
                 {% else %}
-                    <p class="profile-bio">Расскажи немного о себе.</p>
+                    <p class="profile-bio">
+                        Расскажи немного о себе.
+                    </p>
                 {% endif %}
+
+                <a href="/users/{{ user.id }}" class="profile-link">
+                    Посмотреть публичный профиль →
+                </a>
             </div>
         </div>
 
         <form action="/logout" method="post">
-            <button type="submit" class="logout-button">Выйти</button>
+            <button type="submit" class="logout-button">
+                Выйти
+            </button>
         </form>
 
     </section>
 
+    <!-- СТАТИСТИКА -->
     <section class="profile-statistics">
 
         <div class="stat-card">
@@ -80,136 +105,417 @@
 
     </section>
 
+    <!-- МОИ КУРСЫ -->
     <section class="profile-section">
         <h2>Мои курсы</h2>
 
         {% if courses %}
             <div class="card-grid">
+
                 {% for course in courses %}
                     <article class="card">
+
                         <div class="card-top">
                             <span>КУРС</span>
+                            <span>#{{ course.id }}</span>
                         </div>
-                        <h3>{{ course.title }}</h3>
+
+                        <h3>
+                            <a href="/courses/page/{{ course.id }}">
+                                {{ course.title }}
+                            </a>
+                        </h3>
+
                         <p>{{ course.description }}</p>
+
                         <div class="card-bottom">
-                            <span>{{ course.price }} ₽</span>
+                            {% if course.price == 0 %}
+                                <span>Бесплатно</span>
+                            {% else %}
+                                <span>{{ course.price }} ₽</span>
+                            {% endif %}
+
+                            <a href="/courses/page/{{ course.id }}">
+                                Открыть курс →
+                            </a>
                         </div>
+
+                        <!-- УРОКИ КУРСА -->
+                        <div class="course-lessons">
+                            <h4>Уроки курса</h4>
+
+                            {% if course_lessons[course.id] %}
+                                {% for lesson in course_lessons[course.id] %}
+                                    <div class="lesson-delete-item">
+
+                                        <div>
+                                            <strong>
+                                                {{ loop.index }}.
+                                                {{ lesson.title }}
+                                            </strong>
+                                        </div>
+
+                                        <form
+                                            action="/lessons/{{ lesson.id }}/delete"
+                                            method="POST"
+                                        >
+                                            <button
+                                                type="submit"
+                                                class="delete-btn"
+                                            >
+                                                Удалить урок
+                                            </button>
+                                        </form>
+
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="profile-empty">
+                                    В этом курсе пока нет уроков.
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        <div class="publication-actions">
+
+                            <a
+                                href="/courses/{{ course.id }}/edit"
+                                class="edit-btn"
+                            >
+                                Редактировать
+                            </a>
+
+                            <form
+                                action="/courses/{{ course.id }}/delete"
+                                method="POST"
+                            >
+                                <button
+                                    type="submit"
+                                    class="delete-btn"
+                                    {% if course_lessons[course.id] %}
+                                        disabled
+                                    {% endif %}
+                                >
+                                    Удалить курс
+                                </button>
+                            </form>
+
+                        </div>
+
                     </article>
                 {% endfor %}
+
             </div>
         {% else %}
-            <p class="profile-empty">Ты пока не создал(а) ни одного курса.</p>
+            <p class="profile-empty">
+                Ты пока не создал(а) ни одного курса.
+            </p>
         {% endif %}
     </section>
 
+    <!-- МОИ ПРОЕКТЫ -->
     <section class="profile-section">
         <h2>Мои проекты</h2>
 
         {% if projects %}
             <div class="card-grid">
+
                 {% for project in projects %}
                     <article class="card">
+
                         <div class="card-top">
                             <span>ПРОЕКТ</span>
                         </div>
-                        <h3>{{ project.title }}</h3>
+
+                        <h3>
+                            <a href="/projects/project/{{ project.id }}">
+                                {{ project.title }}
+                            </a>
+                        </h3>
+
                         <p>{{ project.description }}</p>
+
                         <div class="card-bottom">
                             <span>{{ project.technologies }}</span>
+                            <a href="/projects/project/{{ project.id }}">
+                                Открыть →
+                            </a>
                         </div>
+
                         {% if project.github_url %}
-                            <a href="{{ project.github_url }}" target="_blank">GitHub</a>
+                            <a
+                                href="{{ project.github_url }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                GitHub ↗
+                            </a>
                         {% endif %}
+
+                        <div class="publication-actions">
+
+                            <a href="/projects/{{ project.id }}/edit">
+                                Редактировать
+                            </a>
+
+                            <form
+                                action="/projects/{{ project.id }}/delete"
+                                method="POST"
+                            >
+                                <button
+                                    type="submit"
+                                    class="delete-btn"
+                                >
+                                    Удалить
+                                </button>
+                            </form>
+
+                        </div>
+
                     </article>
                 {% endfor %}
+
             </div>
         {% else %}
-            <p class="profile-empty">Ты пока не создал(а) ни одного проекта.</p>
+            <p class="profile-empty">
+                Ты пока не создал(а) ни одного проекта.
+            </p>
         {% endif %}
     </section>
 
+    <!-- МОИ СТАТЬИ -->
     <section class="profile-section">
         <h2>Мои статьи</h2>
 
         {% if articles %}
             <div class="card-grid">
+
                 {% for article in articles %}
                     <article class="card">
+
                         <div class="card-top">
                             <span>СТАТЬЯ</span>
                         </div>
-                        <h3>{{ article.title }}</h3>
-                        <p>{{ article.content }}</p>
-                    </article>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="profile-empty">Ты пока не написал(а) статей.</p>
-        {% endif %}
-    </section>
 
-    <section class="profile-section">
-        <h2>Мои опросы</h2>
+                        <h3>
+                            <a href="/articles/article/{{ article.id }}">
+                                {{ article.title }}
+                            </a>
+                        </h3>
 
-        {% if polls %}
-            <div class="card-grid">
-                {% for poll in polls %}
-                    <article class="card">
-                        <div class="card-top">
-                            <span>ОПРОС</span>
-                        </div>
-                        <h3>{{ poll.question }}</h3>
                         <p>
-                            {% if poll.is_active %}
-                                Активен
-                            {% else %}
-                                Завершён
-                            {% endif %}
+                            {{ article.content[:250] }}
+                            {% if article.content|length > 250 %}...{% endif %}
                         </p>
+
+                        <div class="card-bottom">
+                            <a href="/articles/article/{{ article.id }}">
+                                Открыть статью →
+                            </a>
+                        </div>
+
+                        <div class="publication-actions">
+
+                            <a href="/articles/{{ article.id }}/edit">
+                                Редактировать
+                            </a>
+
+                            <form
+                                action="/articles/{{ article.id }}/delete"
+                                method="POST"
+                            >
+                                <button
+                                    type="submit"
+                                    class="delete-btn"
+                                >
+                                    Удалить
+                                </button>
+                            </form>
+
+                        </div>
+
                     </article>
                 {% endfor %}
+
             </div>
         {% else %}
-            <p class="profile-empty">Ты пока не создал(а) опросов.</p>
+            <p class="profile-empty">
+                Ты пока не написал(а) статей.
+            </p>
         {% endif %}
     </section>
 
+    <!-- МОИ ЛАЙКИ -->
+    <section class="profile-section">
+        <h2>Мои лайки</h2>
+
+        {% if liked_courses or liked_projects or liked_articles %}
+            <div class="card-grid">
+
+                {% for course in liked_courses %}
+                    <article class="card">
+
+                        <div class="card-top">
+                            <span>КУРС</span>
+                        </div>
+
+                        <h3>{{ course.title }}</h3>
+                        <p>{{ course.description }}</p>
+
+                        <a href="/courses/page/{{ course.id }}">
+                            Открыть курс →
+                        </a>
+
+                    </article>
+                {% endfor %}
+
+                {% for project in liked_projects %}
+                    <article class="card">
+
+                        <div class="card-top">
+                            <span>ПРОЕКТ</span>
+                        </div>
+
+                        <h3>{{ project.title }}</h3>
+                        <p>{{ project.description }}</p>
+
+                        <a href="/projects/project/{{ project.id }}">
+                            Открыть проект →
+                        </a>
+
+                    </article>
+                {% endfor %}
+
+                {% for article in liked_articles %}
+                    <article class="card">
+
+                        <div class="card-top">
+                            <span>СТАТЬЯ</span>
+                        </div>
+
+                        <h3>{{ article.title }}</h3>
+
+                        <p>
+                            {{ article.content[:250] }}
+                            {% if article.content|length > 250 %}...{% endif %}
+                        </p>
+
+                        <a href="/articles/article/{{ article.id }}">
+                            Открыть статью →
+                        </a>
+
+                    </article>
+                {% endfor %}
+
+            </div>
+        {% else %}
+            <p class="profile-empty">
+                Ты пока не поставила лайки публикациям.
+            </p>
+        {% endif %}
+    </section>
+
+    <!-- ПОДПИСКИ НА АВТОРОВ -->
     <section class="profile-section">
         <h2>Подписки на авторов</h2>
 
         {% if author_subscriptions %}
             <div class="card-grid">
+
                 {% for subscription, author in author_subscriptions %}
                     <article class="card">
-                        <h3>{{ author.username }}</h3>
-                        <p>{{ author.email }}</p>
+
+                        <div class="card-top">
+                            <span>АВТОР</span>
+                        </div>
+
+                        <div class="profile-info">
+
+                            {% if author.avatar_url %}
+                                <img
+                                    src="{{ author.avatar_url }}"
+                                    alt="Аватар автора"
+                                    class="avatar"
+                                >
+                            {% else %}
+                                <div class="avatar profile-placeholder">
+                                    {{ author.username[0]|upper }}
+                                </div>
+                            {% endif %}
+
+                            <div>
+                                <h3>{{ author.username }}</h3>
+                                <span>Автор DevSpace</span>
+                            </div>
+
+                        </div>
+
+                        <div class="card-bottom">
+                            <a href="/users/{{ author.id }}">
+                                Перейти в профиль →
+                            </a>
+                        </div>
+
                     </article>
                 {% endfor %}
+
             </div>
         {% else %}
-            <p class="profile-empty">Пока нет подписок на авторов.</p>
+            <p class="profile-empty">
+                Пока нет подписок на авторов.
+            </p>
         {% endif %}
     </section>
 
+    <!-- ПОДПИСКИ НА КУРСЫ -->
     <section class="profile-section">
         <h2>Подписки на курсы</h2>
 
         {% if course_subscriptions %}
             <div class="card-grid">
+
                 {% for subscription, course in course_subscriptions %}
                     <article class="card">
+
+                        <div class="card-top">
+                            <span>КУРС</span>
+                            <span>#{{ course.id }}</span>
+                        </div>
+
                         <h3>{{ course.title }}</h3>
+
                         <p>{{ course.description }}</p>
+
+                        <div class="card-bottom">
+                            {% if course.price == 0 %}
+                                <span>Бесплатно</span>
+                            {% else %}
+                                <span>{{ course.price }} ₽</span>
+                            {% endif %}
+
+                            <a href="/courses/page/{{ course.id }}">
+                                Перейти к курсу →
+                            </a>
+                        </div>
+
                     </article>
                 {% endfor %}
+
             </div>
         {% else %}
-            <p class="profile-empty">Пока нет подписок на курсы.</p>
+            <p class="profile-empty">
+                Пока нет подписок на курсы.
+            </p>
         {% endif %}
     </section>
+
+    <footer>
+        <span>DevSpace</span>
+        <span>Учись. Создавай. Делись.</span>
+    </footer>
 
 </main>
 
 </body>
 </html>
+```

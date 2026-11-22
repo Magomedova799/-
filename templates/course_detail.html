@@ -1,137 +1,193 @@
-```html
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ course.title }} — DevSpace</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <style>
-        .course-detail {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 30px;
-        }
-
-        .course-header {
-            padding: 30px;
-            border-radius: 16px;
-            background: var(--card-bg, #ffffff);
-            margin-bottom: 25px;
-        }
-
-        .course-header h1 {
-            margin: 0 0 15px;
-            font-size: 30px;
-        }
-
-        .course-description {
-            line-height: 1.7;
-            color: var(--text-secondary, #777);
-        }
-
-        .course-meta {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-
-        .lessons-list {
-            display: grid;
-            gap: 15px;
-        }
-
-        .lesson-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 15px;
-            padding: 20px;
-            border-radius: 12px;
-            background: var(--card-bg, #ffffff);
-            text-decoration: none;
-            color: inherit;
-            transition: transform 0.2s;
-        }
-
-        .lesson-card:hover {
-            transform: translateY(-3px);
-        }
-
-        .lesson-number {
-            font-weight: bold;
-            color: #777;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .empty-message {
-            padding: 25px;
-            border-radius: 12px;
-            background: var(--card-bg, #ffffff);
-            color: #777;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/course_detail.css') }}">
 </head>
 
 <body>
 
-<div class="course-detail">
+<aside class="sidebar">
+    <a href="/" class="logo">DevSpace</a>
 
-    <a href="/" class="back-link">← Вернуться на главную</a>
+    <nav class="navigation">
+        <a href="/#courses">Курсы</a>
+        <a href="/#projects">Проекты</a>
+        <a href="/#articles">Статьи</a>
+        <a href="/profile">Профиль</a>
+    </nav>
 
-    <section class="course-header">
-        <h1>{{ course.title }}</h1>
-
-        <p class="course-description">
-            {{ course.description }}
-        </p>
-
-        <div class="course-meta">
-            <span>Уроков: {{ lessons|length }}</span>
-            <span>
-                {% if course.price and course.price > 0 %}
-                    Цена: {{ course.price }}
-                {% else %}
-                    Бесплатный курс
-                {% endif %}
-            </span>
-        </div>
-    </section>
-
-    <section>
-        <h2>Программа курса</h2>
-
-        {% if lessons %}
-            <div class="lessons-list">
-                {% for lesson in lessons %}
-                    <a href="/lessons/page/{{ lesson.id }}" class="lesson-card">
-                        <div>
-                            <span class="lesson-number">
-                                Урок {{ lesson.position }}
-                            </span>
-                            <h3>{{ lesson.title }}</h3>
-                        </div>
-
-                        <span>Открыть →</span>
-                    </a>
-                {% endfor %}
-            </div>
+    <div class="sidebar-bottom">
+        {% if current_user %}
+            <a href="/users/{{ current_user.id }}" class="username">
+                {{ current_user.username }}
+            </a>
         {% else %}
-            <div class="empty-message">
-                В этом курсе пока нет уроков.
-            </div>
+            <a href="/login" class="auth-link">Войти</a>
         {% endif %}
-    </section>
+    </div>
+</aside>
 
-</div>
+<main class="main">
+    <div class="course-content">
+
+        <a href="/" class="back-link">← На главную</a>
+
+        <section class="course-header">
+            <span class="course-label">DEVSPACE / COURSE</span>
+
+            <h1>{{ course.title }}</h1>
+
+            <p class="course-description">{{ course.description }}</p>
+
+            <div class="course-meta">
+
+                <span>
+                    Автор:
+                    {% if author %}
+                        <a href="/users/{{ author.id }}">
+                            {{ author.username }}
+                        </a>
+                    {% else %}
+                        Неизвестен
+                    {% endif %}
+                </span>
+
+                <span>Уроков: {{ lessons_data|length }}</span>
+
+                {% if course.price and course.price > 0 %}
+                    <span>Цена: {{ course.price }} ₽</span>
+                {% else %}
+                    <span>Бесплатный курс</span>
+                {% endif %}
+
+            </div>
+        </section>
+
+        <!-- Программа курса -->
+        <section>
+            <h2 class="lessons-title">Программа курса</h2>
+
+            {% if lessons_data %}
+                <div class="lessons-grid">
+
+                    {% for item in lessons_data %}
+                        <a href="/lessons/page/{{ item.lesson.id }}" class="lesson-card">
+
+                            <span class="lesson-number">
+                                УРОК {{ item.lesson.position }}
+                            </span>
+
+                            <h3>{{ item.lesson.title }}</h3>
+
+                            <p class="lesson-description">
+                                {{ item.lesson.content[:180] }}
+                                {% if item.lesson.content|length > 180 %}...{% endif %}
+                            </p>
+
+                            <div class="lesson-info">
+                                <span>Тесты: {{ item.tests|length }}</span>
+                                <span>Задания: {{ item.assignments|length }}</span>
+                            </div>
+
+                            <span class="lesson-open">Открыть урок →</span>
+
+                        </a>
+                    {% endfor %}
+
+                </div>
+            {% else %}
+                <div class="empty-message">
+                    В этом курсе пока нет уроков.
+                </div>
+            {% endif %}
+        </section>
+
+        <!-- Лайки и комментарии -->
+        <section class="social-section">
+
+            <h2 class="lessons-title">Обсуждение курса</h2>
+
+            <div class="social-actions">
+
+                {% if current_user %}
+                    <form method="post" action="/courses/page/{{ course.id }}/like">
+                        <button type="submit" class="social-button">
+                            {% if is_liked %}
+                                ♥ Убрать лайк
+                            {% else %}
+                                ♡ Нравится
+                            {% endif %}
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="/login" class="social-button">
+                        Войти, чтобы поставить лайк
+                    </a>
+                {% endif %}
+
+                <span>Лайков: {{ likes_count }}</span>
+
+            </div>
+
+            <div class="comments-box">
+
+                <h3>Комментарии</h3>
+
+                {% if current_user %}
+                    <form
+                        method="post"
+                        action="/courses/page/{{ course.id }}/comment"
+                        class="comment-form"
+                    >
+                        <textarea
+                            name="content"
+                            placeholder="Напиши свой комментарий..."
+                            maxlength="2000"
+                            required
+                        ></textarea>
+
+                        <button type="submit" class="social-button">
+                            Отправить комментарий
+                        </button>
+                    </form>
+                {% else %}
+                    <p class="social-hint">
+                        <a href="/login">Войди в аккаунт</a>,
+                        чтобы оставить комментарий.
+                    </p>
+                {% endif %}
+
+                {% if comments %}
+                    {% for comment, username in comments %}
+                        <div class="comment-item">
+
+                            <div class="comment-author">
+                                <a href="/users/{{ comment.user_id }}">
+                                    {{ username }}
+                                </a>
+                            </div>
+
+                            <div class="comment-text">{{ comment.content }}</div>
+
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="social-hint">
+                        Комментариев пока нет.
+                    </p>
+                {% endif %}
+
+            </div>
+        </section>
+
+    </div>
+</main>
 
 </body>
 </html>
-```
+

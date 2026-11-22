@@ -11,6 +11,11 @@ from app.schemas.project import ProjectCreate, ProjectRead
 from fastapi.responses import RedirectResponse
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
+from app.dependencies import get_optional_user
+from app.models.like import Like
+from app.models.comment import Comment
+from app.models.category import Category
+
 
 router = APIRouter(
     prefix="/projects",
@@ -19,11 +24,16 @@ router = APIRouter(
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/create-page")
-def project_create_page(request: Request):
+def project_create_page(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    categories = db.query(Category).all()
+
     return templates.TemplateResponse(
         request=request,
         name="project_create.html",
-        context={}
+        context={"categories": categories}
     )
 
 @router.post("/create")
@@ -97,23 +107,6 @@ def get_projects(db: Session = Depends(get_db)):
     )
     return projects
 
-@router.get("/search/projects", response_model=list[ProjectRead])
-def search_projects(
-    title: str,
-    db: Session = Depends(get_db)
-):
-    projects = db.query(Project).filter(
-        Project.title.ilike(f"%{title}%")
-    ).all()
-
-    if projects is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Проект не найден"
-        )
-
-    return projects
-
 @router.get("/category/{category_id}", response_model=list[ProjectRead])
 def get_projects_by_category(
     category_id: int,
@@ -125,10 +118,10 @@ def get_projects_by_category(
 
     return projects
 
-@router.put("/{project_id}/editing", response_model=ProjectRead)
-def update_project(
+@router.get("/{project_id}/edit")
+def project_edit_page(
     project_id: int,
-    data: ProjectCreate,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -138,25 +131,53 @@ def update_project(
     ).first()
 
     if project is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Проект не найден"
-        )
+        raise HTTPException(404, "Проект не найден")
 
-    project.title = data.title
-    project.description = data.description
-    project.technologies = data.technologies
-    project.category_id = data.category_id
-    project.github_url = data.github_url
-    project.demo_url = data.demo_url
-    project.image_url = data.image_url
+    return templates.TemplateResponse(
+        request=request,
+        name="project_edit.html",
+        context={
+            "project": project
+        }
+    )
+
+
+@router.post("/{project_id}/edit")
+def update_project_form(
+    project_id: int,
+    title: str = Form(...),
+    description: str = Form(...),
+    technologies: str = Form(...),
+    category_id: int | None = Form(None),
+    github_url: str | None = Form(None),
+    demo_url: str | None = Form(None),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    project = db.query(Project).filter(
+        Project.id == project_id,
+        Project.user_id == current_user.id
+    ).first()
+
+    if project is None:
+        raise HTTPException(404, "Проект не найден")
+
+    project.title = title
+    project.description = description
+    project.technologies = technologies
+    project.category_id = category_id
+    project.github_url = github_url or None
+    project.demo_url = demo_url or None
 
     db.commit()
-    db.refresh(project)
 
-    return project
+    return RedirectResponse(
+        url=f"/projects/project/{project_id}",
+        status_code=303
+    )
 
 
+@router.post("/{project_id}/delete")
 @router.delete("/{project_id}/delete")
 def delete_project(
     project_id: int,
@@ -177,14 +198,18 @@ def delete_project(
     db.delete(project)
     db.commit()
 
-    return {"message": "Проект успешно удалён"}
+    return RedirectResponse(
+        url="/",
+        status_code=303
+    )
 
 
 @router.get("/project/{project_id}")
 def project_page(
     project_id: int,
     request: Request,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_optional_user)
 ):
     project = db.query(Project).filter(
         Project.id == project_id
@@ -200,11 +225,106 @@ def project_page(
         User.id == project.user_id
     ).first()
 
+    likes_count = db.query(Like).filter(
+        Like.project_id == project_id
+    ).count()
+
+    is_liked = False
+
+    if current_user:
+        is_liked = db.query(Like).filter(
+            Like.project_id == project_id,
+            Like.user_id == current_user.id
+        ).first() is not None
+
+    comments = (
+        db.query(Comment, User.username)
+        .join(User, Comment.user_id == User.id)
+        .filter(Comment.project_id == project_id)
+        .order_by(Comment.created_at.desc())
+        .all()
+    )
+
     return templates.TemplateResponse(
         request=request,
         name="project_detail.html",
         context={
             "project": project,
-            "author": author
+            "author": author,
+            "current_user": current_user,
+            "likes_count": likes_count,
+            "is_liked": is_liked,
+            "comments": comments
         }
+    )
+
+
+@router.post("/project/{project_id}/like")
+def toggle_project_like(
+    project_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    project = db.query(Project).filter(
+        Project.id == project_id
+    ).first()
+
+    if project is None:
+        raise HTTPException(404, "Проект не найден")
+
+    like = db.query(Like).filter(
+        Like.project_id == project_id,
+        Like.user_id == current_user.id
+    ).first()
+
+    if like:
+        db.delete(like)
+    else:
+        db.add(Like(
+            user_id=current_user.id,
+            project_id=project_id
+        ))
+
+    db.commit()
+
+    return RedirectResponse(
+        url=f"/projects/project/{project_id}",
+        status_code=303
+    )
+
+
+@router.post("/project/{project_id}/comment")
+def add_project_comment(
+    project_id: int,
+    content: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    project = db.query(Project).filter(
+        Project.id == project_id
+    ).first()
+
+    if project is None:
+        raise HTTPException(404, "Проект не найден")
+
+    content = content.strip()
+
+    if not content or len(content) > 2000:
+        raise HTTPException(
+            status_code=400,
+            detail="Комментарий должен содержать от 1 до 2000 символов"
+        )
+
+    comment = Comment(
+        user_id=current_user.id,
+        project_id=project_id,
+        content=content
+    )
+
+    db.add(comment)
+    db.commit()
+
+    return RedirectResponse(
+        url=f"/projects/project/{project_id}",
+        status_code=303
     )

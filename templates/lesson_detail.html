@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -7,73 +8,7 @@
     <title>{{ lesson.title }} | DevSpace</title>
 
     <link rel="stylesheet" href="/static/css/style.css">
-
-    <style>
-        .lesson-content {
-            max-width: 900px;
-            padding: 40px 0;
-        }
-
-        .lesson-text {
-            color: #ccc;
-            line-height: 1.8;
-            white-space: pre-wrap;
-            margin-top: 25px;
-        }
-
-        .lesson-image {
-            display: block;
-            max-width: 100%;
-            max-height: 450px;
-            object-fit: contain;
-            margin-top: 25px;
-            border-radius: 12px;
-        }
-
-        .lesson-video {
-            display: block;
-            width: 100%;
-            max-height: 480px;
-            margin-top: 25px;
-            border-radius: 12px;
-        }
-
-        .test-card {
-            background: #1b1b1b;
-            border: 1px solid #303030;
-            border-radius: 12px;
-            padding: 25px;
-            margin-top: 25px;
-        }
-
-        .question {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid #303030;
-        }
-
-        .answer-option {
-            display: block;
-            margin-top: 12px;
-            color: #ccc;
-        }
-
-        .submit-button {
-            margin-top: 25px;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            background: #7c5cff;
-            color: white;
-            cursor: pointer;
-            font-size: 15px;
-        }
-
-        .empty-message {
-            color: #888;
-            margin-top: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/lesson_detail.css">
 </head>
 
 <body>
@@ -93,12 +28,11 @@
 <div class="main">
     <div class="lesson-content">
 
-        <a href="/courses/page/{{ lesson.course_id }}"
-           style="color: #888; text-decoration: none;">
+        <a href="/courses/page/{{ lesson.course_id }}" class="back-link">
             ← Назад к курсу
         </a>
 
-        <h1 style="margin-top: 30px;">
+        <h1 class="lesson-title">
             {{ lesson.title }}
         </h1>
 
@@ -121,9 +55,9 @@
             </video>
         {% endif %}
 
-        <hr style="border-color: #292929; margin: 40px 0;">
+        <hr class="section-divider">
 
-        <h2>Тесты по уроку</h2>
+        <h2 class="tests-title">Тесты по уроку</h2>
 
         {% if tests_data %}
 
@@ -134,7 +68,7 @@
                     <h3>{{ item.test.title }}</h3>
 
                     {% if item.test.description %}
-                        <p style="color: #aaa;">
+                        <p class="test-description">
                             {{ item.test.description }}
                         </p>
                     {% endif %}
@@ -173,10 +107,7 @@
 
                             {% endfor %}
 
-                            <button
-                                type="submit"
-                                class="submit-button"
-                            >
+                            <button type="submit" class="submit-button">
                                 Проверить ответы
                             </button>
 

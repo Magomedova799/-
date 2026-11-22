@@ -10,7 +10,8 @@
 <body>
 
 <aside class="sidebar">
-    <div class="logo">DevSpace</div>
+    <a href="/" class="logo">DevSpace</a>
+
     <nav class="navigation">
         <a href="/">Главная</a>
         <a href="/#courses">Курсы</a>
@@ -22,16 +23,23 @@
 </aside>
 
 <main class="main">
+
     <header class="header">
         <span class="header-label">НАСТРОЙКИ ПРОФИЛЯ</span>
         <a href="/profile" class="create-button">Назад в профиль</a>
     </header>
 
     <section class="auth-section">
+
         <h1>Редактировать профиль</h1>
         <p class="auth-description">Обнови информацию о себе.</p>
 
-        <form action="/profile/edit" method="post" class="auth-card">
+        <form
+            action="/profile/edit"
+            method="post"
+            enctype="multipart/form-data"
+            class="auth-card"
+        >
 
             {% if request.query_params.get('error') %}
                 <p class="form-error">
@@ -57,19 +65,43 @@
                 placeholder="Расскажи о себе..."
             >{{ user.bio or '' }}</textarea>
 
-            <label for="avatar_url">Ссылка на аватар</label>
+            <label>Текущий аватар</label>
+
+            {% if user.avatar_url %}
+                <img
+                    src="{{ user.avatar_url }}"
+                    alt="Текущий аватар"
+                    class="profile-avatar"
+                >
+            {% else %}
+                <div class="profile-avatar profile-placeholder">
+                    {{ user.username[0]|upper }}
+                </div>
+            {% endif %}
+
+            <label for="avatar">Загрузить новый аватар</label>
             <input
-                id="avatar_url"
-                type="url"
-                name="avatar_url"
-                value="{{ user.avatar_url or '' }}"
-                placeholder="https://example.com/avatar.jpg"
+                id="avatar"
+                type="file"
+                name="avatar"
+                accept="image/jpeg,image/png,image/webp,image/gif"
             >
 
+            <p class="auth-description">
+                Можно загрузить изображение с компьютера.
+                Максимальный размер — 5 МБ.
+                Если файл не выбран, текущий аватар сохранится.
+            </p>
+
             <button type="submit">Сохранить изменения</button>
+
         </form>
+
     </section>
+
 </main>
 
 </body>
 </html>
+
+

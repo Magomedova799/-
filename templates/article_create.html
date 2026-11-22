@@ -1,26 +1,62 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Создать статью — DevSpace</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
 </head>
 <body>
+
     <main class="create-container">
+
         <h1>Создать статью</h1>
+
         <form action="/articles/create-form" method="post">
-            <label>Название статьи</label>
-            <input name="title" required minlength="3">
 
-            <label>Текст статьи</label>
-            <textarea name="content" required minlength="10" rows="12"></textarea>
+            <label for="title">Название статьи</label>
+            <input
+                type="text"
+                id="title"
+                name="title"
+                placeholder="Например: Основы Python"
+                required
+                minlength="3"
+            >
 
-            <label>ID категории (необязательно)</label>
-            <input type="number" name="category_id">
+            <label for="content">Текст статьи</label>
+            <textarea
+                id="content"
+                name="content"
+                placeholder="Напиши свою статью..."
+                required
+                minlength="10"
+                rows="12"
+            ></textarea>
 
-            <button type="submit">Опубликовать</button>
+            <label for="category_id">Категория статьи</label>
+
+            <select id="category_id" name="category_id">
+                <option value="">Без категории</option>
+
+                {% for category in categories %}
+                    <option value="{{ category.id }}">
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+
+            </select>
+
+            <button type="submit">
+                Опубликовать статью
+            </button>
+
         </form>
-        <a href="/create">Назад</a>
+
+        <a href="/create">← Назад</a>
+
     </main>
+
 </body>
 </html>

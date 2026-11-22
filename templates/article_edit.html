@@ -1,0 +1,39 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование статьи — DevSpace</title>
+</head>
+<body>
+    <main>
+        <h1>Редактирование статьи</h1>
+
+        <form action="/articles/{{ article.id }}/edit" method="post">
+            <label>Название статьи</label>
+            <input
+                type="text"
+                name="title"
+                value="{{ article.title }}"
+                required
+            >
+
+            <label>Содержание</label>
+            <textarea name="content" required>{{ article.content }}</textarea>
+
+            <label>ID категории</label>
+            <input
+                type="number"
+                name="category_id"
+                value="{{ article.category_id or '' }}"
+            >
+
+            <button type="submit">Сохранить изменения</button>
+        </form>
+
+        <a href="/articles/article/{{ article.id }}">Назад</a>
+    </main>
+</body>
+</html>
+```

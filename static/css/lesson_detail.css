@@ -1,0 +1,230 @@
+
+/* =====================================
+   СТРАНИЦА УРОКА
+===================================== */
+
+.lesson-content {
+    width: 100%;
+    max-width: 900px;
+    padding: 40px 0;
+}
+
+/* =====================================
+   НАВИГАЦИЯ
+===================================== */
+
+.back-link {
+    display: inline-block;
+    color: #888;
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: #3b82f6;
+}
+
+/* =====================================
+   ЗАГОЛОВОК И ТЕКСТ
+===================================== */
+
+.lesson-title {
+    margin-top: 30px;
+    color: #e5e5e5;
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 400;
+    letter-spacing: -1.5px;
+    line-height: 1.2;
+}
+
+.lesson-text {
+    color: #ccc;
+    font-size: 14px;
+    line-height: 1.9;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    margin-top: 25px;
+}
+
+/* =====================================
+   ИЗОБРАЖЕНИЕ
+===================================== */
+
+.lesson-image {
+    display: block;
+    max-width: 100%;
+    max-height: 450px;
+    object-fit: contain;
+    margin-top: 25px;
+    border: 1px solid #303030;
+    border-radius: 12px;
+}
+
+/* =====================================
+   ВИДЕО
+===================================== */
+
+.lesson-video {
+    display: block;
+    width: 100%;
+    max-height: 480px;
+    margin-top: 25px;
+    background: #050505;
+    border: 1px solid #303030;
+    border-radius: 12px;
+}
+
+/* =====================================
+   РАЗДЕЛИТЕЛЬ
+===================================== */
+
+.section-divider {
+    border: none;
+    border-top: 1px solid #292929;
+    margin: 40px 0;
+}
+
+/* =====================================
+   ТЕСТЫ
+===================================== */
+
+.tests-title {
+    margin-bottom: 20px;
+    color: #e5e5e5;
+    font-size: 24px;
+    font-weight: 400;
+}
+
+.test-card {
+    background: #050505;
+    border: 1px solid #303030;
+    border-radius: 14px;
+    padding: 25px;
+    margin-top: 25px;
+    transition: border-color 0.2s ease;
+}
+
+.test-card:hover {
+    border-color: #444;
+}
+
+.test-card h3 {
+    color: #e5e5e5;
+    font-size: 19px;
+    font-weight: 400;
+    margin-top: 0;
+}
+
+.test-description {
+    color: #999;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* =====================================
+   ВОПРОСЫ
+===================================== */
+
+.question {
+    margin-top: 25px;
+    padding-top: 18px;
+    border-top: 1px solid #303030;
+}
+
+.question h4 {
+    color: #e5e5e5;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+/* =====================================
+   ВАРИАНТЫ ОТВЕТОВ
+===================================== */
+
+.answer-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 13px;
+    padding: 12px 14px;
+    color: #ccc;
+    font-size: 13px;
+    line-height: 1.5;
+    background: #0b0b0b;
+    border: 1px solid #292929;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.answer-option:hover {
+    border-color: #3b82f6;
+    background: #101722;
+}
+
+.answer-option input {
+    margin: 0;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+/* =====================================
+   КНОПКА ОТПРАВКИ
+===================================== */
+
+.submit-button {
+    display: inline-block;
+    margin-top: 25px;
+    padding: 12px 24px;
+    border: 1px solid #3b82f6;
+    border-radius: 30px;
+    background: #3b82f6;
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+    transition: 0.2s ease;
+}
+
+.submit-button:hover {
+    background: transparent;
+    color: #3b82f6;
+}
+
+/* =====================================
+   ПУСТЫЕ СОСТОЯНИЯ
+===================================== */
+
+.empty-message {
+    color: #888;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-top: 20px;
+}
+
+/* =====================================
+   АДАПТИВНОСТЬ
+===================================== */
+
+@media (max-width: 700px) {
+    .lesson-content {
+        padding: 25px 15px;
+    }
+
+    .lesson-title {
+        font-size: 30px;
+    }
+
+    .lesson-text {
+        font-size: 13px;
+    }
+
+    .test-card {
+        padding: 18px;
+    }
+
+    .submit-button {
+        width: 100%;
+    }
+}

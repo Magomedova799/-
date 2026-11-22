@@ -1,69 +1,47 @@
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>DevSpace</title>
-
     <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
 </head>
-
 <body>
 
 <aside class="sidebar">
-
     <a href="/" class="logo">DevSpace</a>
 
     <nav class="navigation">
-        <a href="#courses">курсы</a>
-        <a href="#projects">проекты</a>
-        <a href="#articles">статьи</a>
-        <a href="#likes">лайки</a>
-        <a href="/profile">профиль</a>
+        <a href="#courses">Курсы</a>
+        <a href="#projects">Проекты</a>
+        <a href="#articles">Статьи</a>
+        <a href="/profile">Профиль</a>
     </nav>
 
     <div class="sidebar-bottom">
         {% if user %}
-            <span class="username">{{ user.username }}</span>
-            {% if user %}
-    <span class="username">{{ user.username }}</span>
-
-    <form action="/logout" method="post">
-        <button type="submit" class="auth-link">выйти</button>
-    </form>
-{% else %}
-    <a href="/login" class="auth-link">
-        войти /<br>
-        зарегистрироваться
-    </a>
-{% endif %}
-        {% else %}
-            <a href="/login" class="auth-link">
-                войти /<br>
-                зарегистрироваться
+            <a href="/users/{{ user.id }}" class="username">
+                {{ user.username }}
             </a>
+
+            <form action="/logout" method="post">
+                <button type="submit" class="auth-link">Выйти</button>
+            </form>
+        {% else %}
+            <a href="/login" class="auth-link">Войти / зарегистрироваться</a>
         {% endif %}
     </div>
-
 </aside>
-
 
 <main class="main">
 
     <header class="header">
         <span class="header-label">DEVELOPER COMMUNITY</span>
-
-        {% if user %}
-            <a href="/create" class="create-button">+ создать</a>
-        {% else %}
-            <a href="/login" class="create-button">+ создать</a>
-        {% endif %}
+        <a href="/create" class="create-button">+ Создать</a>
     </header>
 
-
     <section class="hero">
-
         <p class="hero-label">YOUR DIGITAL SPACE</p>
 
         <h1>
@@ -76,12 +54,9 @@
             Пространство для разработчиков,
             где знания превращаются в проекты.
         </p>
-
     </section>
 
-
     <!-- КУРСЫ -->
-
     <section class="section" id="courses">
 
         <div class="section-heading">
@@ -92,7 +67,6 @@
         <div class="card-grid">
 
             {% for course in courses %}
-
                 <article class="card">
 
                     <div class="card-top">
@@ -104,33 +78,38 @@
 
                     <p>{{ course.description }}</p>
 
+                    {% if course.user %}
+                        <p class="project-author">
+                            Автор:
+                            <a href="/users/{{ course.user.id }}">
+                                {{ course.user.username }}
+                            </a>
+                        </p>
+                    {% endif %}
+
                     <div class="card-bottom">
+
                         {% if course.price == 0 %}
                             <span>Бесплатно</span>
                         {% else %}
                             <span>{{ course.price }} ₽</span>
                         {% endif %}
 
-                        <a href="/courses/page/{{ course.id }}">Подробнее</a>
+                        <a href="/courses/page/{{ course.id }}">
+                            Подробнее →
+                        </a>
+
                     </div>
 
                 </article>
-
             {% else %}
-
-                <div class="empty-card">
-                    Курсов пока нет.
-                </div>
-
+                <div class="empty-card">Курсов пока нет.</div>
             {% endfor %}
 
         </div>
-
     </section>
 
-
     <!-- ПРОЕКТЫ -->
-
     <section class="section" id="projects">
 
         <div class="section-heading">
@@ -141,7 +120,6 @@
         <div class="card-grid">
 
             {% for project in projects %}
-
                 <article class="card">
 
                     {% if project.image_url %}
@@ -158,11 +136,16 @@
 
                     <h3>{{ project.title }}</h3>
 
-<p class="project-author">
-    Автор: {{ project.user.username }}
-</p>
+                    {% if project.user %}
+                        <p class="project-author">
+                            Автор:
+                            <a href="/users/{{ project.user.id }}">
+                                {{ project.user.username }}
+                            </a>
+                        </p>
+                    {% endif %}
 
-<p>{{ project.description }}</p>
+                    <p>{{ project.description }}</p>
 
                     <div class="technologies">
                         {{ project.technologies }}
@@ -171,34 +154,30 @@
                     <div class="card-bottom">
 
                         {% if project.github_url %}
-                            <a href="{{ project.github_url }}" target="_blank">
+                            <a
+                                href="{{ project.github_url }}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
                                 GitHub ↗
                             </a>
                         {% endif %}
 
-                        {% if project.demo_url %}
-                            <a href="/projects/project/{{ project.id }}">Подробнее ↗</a>
-                        {% endif %}
+                        <a href="/projects/project/{{ project.id }}">
+                            Подробнее →
+                        </a>
 
                     </div>
 
                 </article>
-
             {% else %}
-
-                <div class="empty-card">
-                    Проектов пока нет.
-                </div>
-
+                <div class="empty-card">Проектов пока нет.</div>
             {% endfor %}
 
         </div>
-
     </section>
 
-
     <!-- СТАТЬИ -->
-
     <section class="section" id="articles">
 
         <div class="section-heading">
@@ -209,7 +188,6 @@
         <div class="card-grid">
 
             {% for article in articles %}
-
                 <article class="card">
 
                     <div class="card-top">
@@ -218,6 +196,15 @@
 
                     <h3>{{ article.title }}</h3>
 
+                    {% if article.user %}
+                        <p class="project-author">
+                            Автор:
+                            <a href="/users/{{ article.user.id }}">
+                                {{ article.user.username }}
+                            </a>
+                        </p>
+                    {% endif %}
+
                     <p>
                         {{ article.content[:250] }}
                         {% if article.content|length > 250 %}...{% endif %}
@@ -225,26 +212,24 @@
 
                     <div class="card-bottom">
                         <span>Статья</span>
-                        <a href="/articles/article/{{ article.id }}">Подробнее</a>
+
+                        <a href="/articles/article/{{ article.id }}">
+                            Подробнее →
+                        </a>
                     </div>
 
                 </article>
-
             {% else %}
-
-                <div class="empty-card">
-                    Статей пока нет.
-                </div>
-
+                <div class="empty-card">Статей пока нет.</div>
             {% endfor %}
 
         </div>
-
     </section>
-<footer>
-    <span>DevSpace</span>
-    <span>Учись. Создавай. Делись.</span>
-</footer>
+
+    <footer>
+        <span>DevSpace</span>
+        <span>Учись. Создавай. Делись.</span>
+    </footer>
 
 </main>
 

@@ -37,8 +37,6 @@ def get_content_field(target_type: str):
     raise HTTPException(status_code=400, detail="Неверный тип объекта")
 
 
-# ---------------- ПОДПИСКИ ----------------
-
 @router.post("/subscriptions/{target_type}/{target_id}")
 def subscribe(
     target_type: str,
@@ -117,8 +115,6 @@ def get_my_subscriptions(
     ]
 
 
-# ---------------- ЛАЙКИ ----------------
-
 @router.post("/likes/{target_type}/{target_id}")
 def add_like(
     target_type: str,
@@ -195,7 +191,6 @@ def get_my_likes(
     ]
 
 
-# ---------------- КОММЕНТАРИИ ----------------
 
 @router.post("/comments/{target_type}/{target_id}")
 def add_comment(

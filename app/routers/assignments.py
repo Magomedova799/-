@@ -1,12 +1,15 @@
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db, get_current_user
+
 from app.models.assignment import Assignment
 from app.models.lesson import Lesson
 from app.models.course import Course
 from app.models.user import User
+
 from app.schemas.assignment import AssignmentCreate, AssignmentRead
 
 
@@ -15,6 +18,118 @@ router = APIRouter(
     tags=["Задания"]
 )
 
+templates = Jinja2Templates(directory="templates")
+
+
+@router.get("/create-page")
+def assignment_create_page(
+    request: Request,
+    lesson_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    lesson = db.query(Lesson).filter(
+        Lesson.id == lesson_id
+    ).first()
+
+    if lesson is None:
+        raise HTTPException(404, "Урок не найден")
+
+    course = db.query(Course).filter(
+        Course.id == lesson.course_id,
+        Course.user_id == current_user.id
+    ).first()
+
+    if course is None:
+        raise HTTPException(
+            403,
+            "У вас нет доступа к этому уроку"
+        )
+
+    assignments_count = db.query(Assignment).filter(
+        Assignment.lesson_id == lesson_id
+    ).count()
+
+    if assignments_count >= 2:
+        return RedirectResponse(
+            url=f"/lessons/page/{lesson_id}",
+            status_code=303
+        )
+
+    return templates.TemplateResponse(
+        request=request,
+        name="assignment_create.html",
+        context={
+            "lesson": lesson,
+            "assignments_count": assignments_count
+        }
+    )
+
+
+@router.post("/create-form")
+async def create_assignment_form(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    form = await request.form()
+
+    try:
+        lesson_id = int(form.get("lesson_id"))
+    except (ValueError, TypeError):
+        raise HTTPException(400, "Некорректный урок")
+
+    lesson = db.query(Lesson).filter(
+        Lesson.id == lesson_id
+    ).first()
+
+    if lesson is None:
+        raise HTTPException(404, "Урок не найден")
+
+    course = db.query(Course).filter(
+        Course.id == lesson.course_id,
+        Course.user_id == current_user.id
+    ).first()
+
+    if course is None:
+        raise HTTPException(
+            403,
+            "У вас нет доступа к этому уроку"
+        )
+
+    title = str(form.get("title", "")).strip()
+    content = str(form.get("content", "")).strip()
+
+    if not title:
+        raise HTTPException(400, "Введите название задания")
+
+    if not content:
+        raise HTTPException(400, "Введите описание задания")
+
+    assignments_count = db.query(Assignment).filter(
+        Assignment.lesson_id == lesson_id
+    ).count()
+
+    if assignments_count >= 2:
+        raise HTTPException(
+            400,
+            "К уроку можно добавить максимум два задания"
+        )
+
+    assignment = Assignment(
+        lesson_id=lesson_id,
+        title=title,
+        content=content,
+        position=assignments_count + 1
+    )
+
+    db.add(assignment)
+    db.commit()
+
+    return RedirectResponse(
+        url=f"/lessons/page/{lesson_id}",
+        status_code=303
+    )
 
 
 @router.post("/create", response_model=AssignmentRead)
@@ -67,6 +182,7 @@ def create_assignment(
 
     return assignment
 
+
 @router.get("/lesson/{lesson_id}", response_model=list[AssignmentRead])
 def get_lesson_assignments(
     lesson_id: int,
@@ -84,7 +200,9 @@ def get_lesson_assignments(
 
     return db.query(Assignment).filter(
         Assignment.lesson_id == lesson_id
-    ).order_by(Assignment.position.asc()).all()
+    ).order_by(
+        Assignment.position.asc()
+    ).all()
 
 
 @router.delete("/{assignment_id}/delete")
@@ -106,6 +224,9 @@ def delete_assignment(
     lesson = db.query(Lesson).filter(
         Lesson.id == assignment.lesson_id
     ).first()
+
+    if lesson is None:
+        raise HTTPException(404, "Урок не найден")
 
     course = db.query(Course).filter(
         Course.id == lesson.course_id,

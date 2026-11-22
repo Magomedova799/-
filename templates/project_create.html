@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -8,6 +9,7 @@
 <body>
     <main class="create-container">
         <h1>Опубликовать проект</h1>
+
         <form action="/projects/create" method="post" enctype="multipart/form-data">
             <label>Название</label>
             <input name="title" required>
@@ -18,8 +20,13 @@
             <label>Технологии</label>
             <input name="technologies" required placeholder="Python, FastAPI, PostgreSQL">
 
-            <label>ID категории</label>
-            <input type="number" name="category_id">
+            <label>Категория</label>
+            <select name="category_id">
+                <option value="">Без категории</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
 
             <label>GitHub</label>
             <input type="url" name="github_url">
@@ -32,6 +39,7 @@
 
             <button type="submit">Опубликовать проект</button>
         </form>
+
         <a href="/create">Назад</a>
     </main>
 </body>

@@ -1,20 +1,19 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from app.dependencies import get_db, get_current_user
+
 from app.models.lesson_test import LessonTest
 from app.models.test_question import TestQuestion
 from app.models.test_attempt import TestAttempt
 from app.models.lesson import Lesson
 from app.models.course import Course
 from app.models.user import User
-from app.schemas.lesson_test import (
-    LessonTestCreate,
-    TestSubmit,
-    TestResultRead
-)
+
+from app.schemas.lesson_test import TestResultRead
 
 
 router = APIRouter(
@@ -26,21 +25,15 @@ templates = Jinja2Templates(directory="templates")
 
 
 
-@router.post("/create")
-def create_test(
-    data: LessonTestCreate,
+@router.get("/create-page")
+def test_create_page(
+    request: Request,
+    lesson_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-
-    if not data.title.strip():
-        raise HTTPException(400, "Введите название теста")
-
-    if not data.questions:
-        raise HTTPException(400, "Добавьте хотя бы один вопрос")
-
     lesson = db.query(Lesson).filter(
-        Lesson.id == data.lesson_id
+        Lesson.id == lesson_id
     ).first()
 
     if lesson is None:
@@ -52,58 +45,160 @@ def create_test(
     ).first()
 
     if course is None:
-        raise HTTPException(403, "Нет доступа к этому уроку")
+        raise HTTPException(403, "Нет доступа к уроку")
 
-    for question in data.questions:
+    return templates.TemplateResponse(
+        request=request,
+        name="test_create.html",
+        context={"lesson": lesson}
+    )
 
-        if not question.question.strip():
-            raise HTTPException(400, "Заполните текст вопроса")
 
-        if len(question.options) < 2:
-            raise HTTPException(400, "Добавьте минимум два варианта ответа")
 
-        for option in question.options:
-            if not option.strip():
+
+@router.post("/create-form")
+async def create_test_form(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    form = await request.form()
+
+    try:
+        lesson_id = int(form.get("lesson_id"))
+    except (ValueError, TypeError):
+        raise HTTPException(400, "Некорректный урок")
+
+    lesson = db.query(Lesson).filter(
+        Lesson.id == lesson_id
+    ).first()
+
+    if lesson is None:
+        raise HTTPException(404, "Урок не найден")
+
+    course = db.query(Course).filter(
+        Course.id == lesson.course_id,
+        Course.user_id == current_user.id
+    ).first()
+
+    if course is None:
+        raise HTTPException(403, "Нет доступа к уроку")
+
+    title = str(form.get("title", "")).strip()
+    description = str(form.get("description", "")).strip()
+
+    if not title:
+        raise HTTPException(400, "Введите название теста")
+
+    questions_data = []
+
+    for number in range(1, 6):
+
+        question_text = str(
+            form.get(f"question_{number}", "")
+        ).strip()
+
+        options_raw = [
+            str(form.get(f"option_{number}_{i}", "")).strip()
+            for i in range(1, 5)
+        ]
+
+        correct_raw = form.get(f"correct_{number}")
+
+        if not question_text:
+            if any(options_raw) or correct_raw is not None:
                 raise HTTPException(
                     400,
-                    "Варианты ответов не должны быть пустыми"
+                    detail=f"Заполните текст вопроса №{number}"
                 )
+            continue
 
-        if (
-            question.correct_option_index < 0
-            or question.correct_option_index >= len(question.options)
-        ):
+        nonempty_indices = [
+            i for i, option in enumerate(options_raw)
+            if option
+        ]
+
+        options = [
+            options_raw[i] for i in nonempty_indices
+        ]
+
+        if len(options) < 2:
             raise HTTPException(
                 400,
-                "Выберите правильный вариант ответа"
+                detail=f"У вопроса №{number} должно быть минимум два варианта ответа"
             )
 
+        if correct_raw is None:
+            raise HTTPException(
+                400,
+                detail=f"Выберите правильный ответ для вопроса №{number}"
+            )
+
+        try:
+            correct_original_index = int(correct_raw)
+        except (ValueError, TypeError):
+            raise HTTPException(
+                400,
+                "Некорректный правильный ответ"
+            )
+
+        if correct_original_index not in range(4):
+            raise HTTPException(
+                400,
+                "Некорректный правильный ответ"
+            )
+
+        if correct_original_index not in nonempty_indices:
+            raise HTTPException(
+                400,
+                detail=f"Правильный вариант вопроса №{number} не заполнен"
+            )
+
+        correct_index = nonempty_indices.index(
+            correct_original_index
+        )
+
+        questions_data.append({
+            "question": question_text,
+            "options": options,
+            "correct_option_index": correct_index,
+            "position": len(questions_data) + 1
+        })
+
+    if not questions_data:
+        raise HTTPException(
+            400,
+            detail="Добавьте хотя бы один вопрос или пропустите создание теста"
+        )
+
     test = LessonTest(
-        lesson_id=data.lesson_id,
-        title=data.title.strip()
+        lesson_id=lesson_id,
+        title=title,
+        description=description or None
     )
 
     db.add(test)
     db.flush()
 
-    for number, question_data in enumerate(data.questions, start=1):
+    for item in questions_data:
         question = TestQuestion(
             test_id=test.id,
-            question=question_data.question.strip(),
-            options=[option.strip() for option in question_data.options],
-            correct_option_index=question_data.correct_option_index,
-            position=number
+            question=item["question"],
+            options=item["options"],
+            correct_option_index=item["correct_option_index"],
+            position=item["position"]
         )
 
         db.add(question)
 
     db.commit()
-    db.refresh(test)
 
-    return {
-        "message": "Тест успешно создан",
-        "test_id": test.id
-    }
+    return RedirectResponse(
+        url=f"/assignments/create-page?lesson_id={lesson_id}",
+        status_code=303
+    )
+
+
 
 
 @router.get("/lesson/{lesson_id}")
@@ -128,6 +223,8 @@ def get_lesson_tests(
     return tests
 
 
+
+
 @router.get("/my-results", response_model=list[TestResultRead])
 def get_my_results(
     db: Session = Depends(get_db),
@@ -135,7 +232,10 @@ def get_my_results(
 ):
     return db.query(TestAttempt).filter(
         TestAttempt.user_id == current_user.id
-    ).order_by(TestAttempt.created_at.desc()).all()
+    ).order_by(
+        TestAttempt.created_at.desc()
+    ).all()
+
 
 
 @router.get("/{test_id}")
@@ -155,7 +255,9 @@ def get_test(
 
     questions = db.query(TestQuestion).filter(
         TestQuestion.test_id == test_id
-    ).order_by(TestQuestion.position.asc()).all()
+    ).order_by(
+        TestQuestion.position.asc()
+    ).all()
 
     return {
         "id": test.id,
@@ -172,64 +274,6 @@ def get_test(
     }
 
 
-@router.post("/{test_id}/submit", response_model=TestResultRead)
-def submit_test(
-    test_id: int,
-    data: TestSubmit,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    test = db.query(LessonTest).filter(
-        LessonTest.id == test_id
-    ).first()
-
-    if test is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Тест не найден"
-        )
-
-    questions = db.query(TestQuestion).filter(
-        TestQuestion.test_id == test_id
-    ).order_by(TestQuestion.position.asc()).all()
-
-    if not questions:
-        raise HTTPException(
-            status_code=400,
-            detail="В тесте нет вопросов"
-        )
-
-    if len(data.answers) != len(questions):
-        raise HTTPException(
-            status_code=400,
-            detail="Количество ответов не совпадает с количеством вопросов"
-        )
-
-    score = 0
-
-    for question, answer in zip(questions, data.answers):
-        if answer < 0 or answer >= len(question.options):
-            raise HTTPException(
-                status_code=400,
-                detail="Указан несуществующий вариант ответа"
-            )
-
-        if answer == question.correct_option_index:
-            score += 1
-
-    attempt = TestAttempt(
-        test_id=test.id,
-        user_id=current_user.id,
-        answers=data.answers,
-        score=score,
-        total_questions=len(questions)
-    )
-
-    db.add(attempt)
-    db.commit()
-    db.refresh(attempt)
-
-    return attempt
 
 
 @router.post("/{test_id}/submit-form")
@@ -248,10 +292,15 @@ async def submit_test_form(
 
     questions = db.query(TestQuestion).filter(
         TestQuestion.test_id == test_id
-    ).order_by(TestQuestion.position.asc()).all()
+    ).order_by(
+        TestQuestion.position.asc()
+    ).all()
 
     if not questions:
-        raise HTTPException(400, "В тесте нет вопросов")
+        raise HTTPException(
+            400,
+            "В тесте нет вопросов"
+        )
 
     form = await request.form()
 
@@ -259,7 +308,10 @@ async def submit_test_form(
     score = 0
 
     for question in questions:
-        answer_value = form.get(f"question_{question.id}")
+
+        answer_value = form.get(
+            f"question_{question.id}"
+        )
 
         if answer_value is None:
             raise HTTPException(
@@ -327,13 +379,19 @@ def delete_test(
         Lesson.id == test.lesson_id
     ).first()
 
+    if lesson is None:
+        raise HTTPException(404, "Урок не найден")
+
     course = db.query(Course).filter(
         Course.id == lesson.course_id,
         Course.user_id == current_user.id
     ).first()
 
     if course is None:
-        raise HTTPException(403, "Нет доступа к этому тесту")
+        raise HTTPException(
+            403,
+            "Нет доступа к этому тесту"
+        )
 
     db.query(TestAttempt).filter(
         TestAttempt.test_id == test_id
@@ -347,3 +405,4 @@ def delete_test(
     db.commit()
 
     return {"message": "Тест успешно удалён"}
+

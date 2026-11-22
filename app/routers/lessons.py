@@ -9,14 +9,18 @@ from app.models.lesson import Lesson
 from app.models.course import Course
 from app.models.user import User
 from app.schemas.lesson import LessonRead, LessonUpdate
+from app.models.lesson_test import LessonTest
+from app.models.test_question import TestQuestion
+from app.models.test_attempt import TestAttempt
+from app.models.assignment import Assignment
+
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-from app.models.lesson_test import LessonTest
-from app.models.test_question import TestQuestion
 
 router = APIRouter(prefix="/lessons", tags=["Уроки"])
 templates = Jinja2Templates(directory="templates")
+
 
 @router.get("/create-page")
 def lesson_create_page(
@@ -35,6 +39,7 @@ def lesson_create_page(
             "courses": courses
         }
     )
+
 
 @router.post("/create")
 async def create_lessons(
@@ -141,9 +146,10 @@ async def create_lessons(
     db.refresh(lesson)
 
     return RedirectResponse(
-        url="/",
-        status_code=303
-    )
+    url=f"/tests/create-page?lesson_id={lesson.id}",
+    status_code=303
+)
+
 
 @router.get("/all", response_model=list[LessonRead])
 def get_lessons(db: Session = Depends(get_db)):
@@ -160,7 +166,10 @@ def get_lesson_by_id(
     ).first()
 
     if lesson is None:
-        raise HTTPException(status_code=404, detail="Урок не найден")
+        raise HTTPException(
+            status_code=404,
+            detail="Урок не найден"
+        )
 
     return lesson
 
@@ -177,19 +186,14 @@ def get_lessons_by_course(
     return lessons
 
 
-@router.delete("/{lesson_id}/delete")
+@router.post("/{lesson_id}/delete")
 def delete_lesson(
     lesson_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     lesson = db.query(Lesson).filter(
-        Lesson.id == lesson_id,
-        Lesson.course_id.in_(
-            db.query(Course.id).filter(
-                Course.user_id == current_user.id
-            )
-        )
+        Lesson.id == lesson_id
     ).first()
 
     if lesson is None:
@@ -198,10 +202,55 @@ def delete_lesson(
             detail="Урок не найден"
         )
 
+    course = db.query(Course).filter(
+        Course.id == lesson.course_id
+    ).first()
+
+    if course is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Курс не найден"
+        )
+
+    if course.user_id != current_user.id:
+        raise HTTPException(
+            status_code=403,
+            detail="Вы не можете удалить этот урок"
+        )
+
+
+    tests = db.query(LessonTest).filter(
+        LessonTest.lesson_id == lesson_id
+    ).all()
+
+    test_ids = [test.id for test in tests]
+
+
+    if test_ids:
+        db.query(TestAttempt).filter(
+            TestAttempt.test_id.in_(test_ids)
+        ).delete(synchronize_session=False)
+
+        db.query(TestQuestion).filter(
+            TestQuestion.test_id.in_(test_ids)
+        ).delete(synchronize_session=False)
+
+    db.query(LessonTest).filter(
+        LessonTest.lesson_id == lesson_id
+    ).delete(synchronize_session=False)
+
+    db.query(Assignment).filter(
+        Assignment.lesson_id == lesson_id
+    ).delete(synchronize_session=False)
+
     db.delete(lesson)
+
     db.commit()
 
-    return {"message": "Урок удален"}
+    return RedirectResponse(
+        url="/profile",
+        status_code=303
+    )
 
 
 @router.put("/{lesson_id}", response_model=LessonRead)
@@ -216,7 +265,10 @@ def update_lesson(
     ).first()
 
     if lesson is None:
-        raise HTTPException(404, "Урок не найден")
+        raise HTTPException(
+            status_code=404,
+            detail="Урок не найден"
+        )
 
     course = db.query(Course).filter(
         Course.id == lesson.course_id,
@@ -224,7 +276,10 @@ def update_lesson(
     ).first()
 
     if course is None:
-        raise HTTPException(403, "Нет доступа к уроку")
+        raise HTTPException(
+            status_code=403,
+            detail="Нет доступа к уроку"
+        )
 
     lesson.title = data.title
     lesson.content = data.content
@@ -248,7 +303,10 @@ def lesson_page(
     ).first()
 
     if lesson is None:
-        raise HTTPException(404, "Урок не найден")
+        raise HTTPException(
+            status_code=404,
+            detail="Урок не найден"
+        )
 
     tests = db.query(LessonTest).filter(
         LessonTest.lesson_id == lesson_id

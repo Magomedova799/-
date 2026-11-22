@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание задания — DevSpace</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        body {
+            background: #11111b;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        .assignment-container {
+            max-width: 750px;
+            margin: 50px auto;
+            padding: 30px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 13px;
+            margin: 10px 0 20px;
+            box-sizing: border-box;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: #20202a;
+            color: white;
+        }
+
+        textarea {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 13px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #7657e8;
+            color: white;
+            cursor: pointer;
+        }
+
+        .skip-link {
+            margin-left: 15px;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="assignment-container">
+
+    <h1>Создание задания</h1>
+
+    <p>
+        Урок:
+        <strong>{{ lesson.title }}</strong>
+    </p>
+
+    <p>
+        Задание помогает студентам закрепить изученный материал.
+    </p>
+
+    <p>
+        Добавлено заданий: {{ assignments_count }} из 2
+    </p>
+
+    <form action="/assignments/create-form" method="post">
+
+        <input
+            type="hidden"
+            name="lesson_id"
+            value="{{ lesson.id }}"
+        >
+
+        <label>Название задания</label>
+
+        <input
+            type="text"
+            name="title"
+            maxlength="200"
+            placeholder="Например: Практика по Python"
+            required
+        >
+
+        <label>Описание задания</label>
+
+        <textarea
+            name="content"
+            placeholder="Опишите, что должен изучить или выполнить студент..."
+            required
+        ></textarea>
+
+        <button type="submit">
+            Сохранить задание и завершить урок
+        </button>
+
+        <a
+            class="skip-link"
+            href="/lessons/page/{{ lesson.id }}"
+        >
+            Пропустить задание
+        </a>
+
+    </form>
+
+</main>
+
+</body>
+</html>

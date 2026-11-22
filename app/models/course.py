@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
-from sqlalchemy import String, Text, DateTime, ForeignKey, func, Numeric
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import (String,Text,DateTime,ForeignKey,func,Numeric)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
 class Course(Base):
@@ -13,3 +13,6 @@ class Course(Base):
     description: Mapped[str] = mapped_column(Text,nullable=False)
     price: Mapped[Decimal] = mapped_column(Numeric(10, 2),default=Decimal("0.00"),nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),server_default=func.now())
+    user = relationship("User")
+    likes = relationship("Like",back_populates="course",cascade="all, delete-orphan",passive_deletes=True)
+    comments = relationship("Comment",back_populates="course",cascade="all, delete-orphan",passive_deletes=True)
