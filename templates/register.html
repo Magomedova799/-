@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация — DevSpace</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+</head>
+<body>
+
+<aside class="sidebar">
+    <a href="/" class="logo">DevSpace.</a>
+
+    <nav class="navigation">
+        <a href="/">Главная</a>
+        <a href="/#courses">Курсы</a>
+        <a href="/#projects">Проекты</a>
+        <a href="/#articles">Статьи</a>
+        <a href="/#polls">Опросы</a>
+    </nav>
+</aside>
+
+<main class="main auth-main">
+
+    <header class="header">
+        <span class="header-label">ACCOUNT / REGISTER</span>
+        <a href="/login" class="create-button">Войти</a>
+    </header>
+
+    <section class="auth-section">
+
+        <span class="section-number">JOIN THE COMMUNITY</span>
+
+        <h1>Создай свой аккаунт<span>.</span></h1>
+
+        <p class="auth-description">
+            Делись проектами, изучай программирование и развивайся вместе с сообществом.
+        </p>
+
+        <div class="auth-card">
+
+            <h2>Регистрация</h2>
+
+            {% if request.query_params.get('error') %}
+                <p class="auth-error">
+                    Пользователь с такой почтой или именем уже существует.
+                </p>
+            {% endif %}
+
+            <form action="/register" method="post">
+
+                <label for="username">Имя пользователя</label>
+                <input
+                    id="username"
+                    type="text"
+                    name="username"
+                    placeholder="Придумай имя"
+                    required
+                >
+
+                <label for="email">Электронная почта</label>
+                <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    placeholder="example@mail.com"
+                    required
+                >
+
+                <label for="password">Пароль</label>
+                <input
+                    id="password"
+                    type="password"
+                    name="password"
+                    placeholder="Минимум 8 символов"
+                    minlength="8"
+                    required
+                >
+
+                <button type="submit">Создать аккаунт</button>
+
+            </form>
+
+            <div class="auth-footer">
+                <span>Уже зарегистрирован?</span>
+                <a href="/login">Войти</a>
+            </div>
+
+        </div>
+
+    </section>
+
+    <footer>
+        <span>DevSpace</span>
+        <span>Учись. Создавай. Делись.</span>
+    </footer>
+
+</main>
+
+</body>
+</html>

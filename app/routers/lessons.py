@@ -9,12 +9,34 @@ from app.models.lesson import Lesson
 from app.models.course import Course
 from app.models.user import User
 from app.schemas.lesson import LessonRead, LessonUpdate
-
+from fastapi import Request
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
+from app.models.lesson_test import LessonTest
+from app.models.test_question import TestQuestion
 
 router = APIRouter(prefix="/lessons", tags=["Уроки"])
+templates = Jinja2Templates(directory="templates")
 
+@router.get("/create-page")
+def lesson_create_page(
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    courses = db.query(Course).filter(
+        Course.user_id == current_user.id
+    ).all()
 
-@router.post("/create", response_model=LessonRead)
+    return templates.TemplateResponse(
+        request=request,
+        name="lesson_create.html",
+        context={
+            "courses": courses
+        }
+    )
+
+@router.post("/create")
 async def create_lessons(
     course_id: int = Form(...),
     title: str = Form(...),
@@ -39,8 +61,7 @@ async def create_lessons(
 
     image_url = None
 
-    
-    if image is not None:
+    if image and image.filename:
         allowed_types = {
             "image/jpeg": ".jpg",
             "image/png": ".png",
@@ -64,15 +85,14 @@ async def create_lessons(
 
         image_url = f"/static/uploads/lessons/photos/{filename}"
 
-    
-    if video is not None:
+    if video and video.filename:
         if video.content_type != "video/mp4":
             raise HTTPException(
                 status_code=400,
                 detail="Разрешены только видео MP4"
             )
 
-        max_size = 100 * 1024 * 1024  
+        max_size = 100 * 1024 * 1024
 
         upload_dir = Path("static/uploads/lessons/videos")
         upload_dir.mkdir(parents=True, exist_ok=True)
@@ -85,7 +105,7 @@ async def create_lessons(
         try:
             with file_path.open("wb") as file:
                 while True:
-                    chunk = await video.read(1024 * 1024)  # 1 МБ
+                    chunk = await video.read(1024 * 1024)
 
                     if not chunk:
                         break
@@ -120,8 +140,10 @@ async def create_lessons(
     db.commit()
     db.refresh(lesson)
 
-    return lesson
-
+    return RedirectResponse(
+        url="/",
+        status_code=303
+    )
 
 @router.get("/all", response_model=list[LessonRead])
 def get_lessons(db: Session = Depends(get_db)):
@@ -213,3 +235,45 @@ def update_lesson(
     db.refresh(lesson)
 
     return lesson
+
+
+@router.get("/page/{lesson_id}")
+def lesson_page(
+    lesson_id: int,
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    lesson = db.query(Lesson).filter(
+        Lesson.id == lesson_id
+    ).first()
+
+    if lesson is None:
+        raise HTTPException(404, "Урок не найден")
+
+    tests = db.query(LessonTest).filter(
+        LessonTest.lesson_id == lesson_id
+    ).all()
+
+    tests_data = []
+
+    for test in tests:
+        questions = (
+            db.query(TestQuestion)
+            .filter(TestQuestion.test_id == test.id)
+            .order_by(TestQuestion.position)
+            .all()
+        )
+
+        tests_data.append({
+            "test": test,
+            "questions": questions
+        })
+
+    return templates.TemplateResponse(
+        request=request,
+        name="lesson_detail.html",
+        context={
+            "lesson": lesson,
+            "tests_data": tests_data
+        }
+    )

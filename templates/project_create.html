@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Создать проект — DevSpace</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <main class="create-container">
+        <h1>Опубликовать проект</h1>
+        <form action="/projects/create" method="post" enctype="multipart/form-data">
+            <label>Название</label>
+            <input name="title" required>
+
+            <label>Описание</label>
+            <textarea name="description" required rows="6"></textarea>
+
+            <label>Технологии</label>
+            <input name="technologies" required placeholder="Python, FastAPI, PostgreSQL">
+
+            <label>ID категории</label>
+            <input type="number" name="category_id">
+
+            <label>GitHub</label>
+            <input type="url" name="github_url">
+
+            <label>Демо</label>
+            <input type="url" name="demo_url">
+
+            <label>Изображение</label>
+            <input type="file" name="file" accept="image/jpeg,image/png,image/webp">
+
+            <button type="submit">Опубликовать проект</button>
+        </form>
+        <a href="/create">Назад</a>
+    </main>
+</body>
+</html>

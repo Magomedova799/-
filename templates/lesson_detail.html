@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ lesson.title }} | DevSpace</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        .lesson-content {
+            max-width: 900px;
+            padding: 40px 0;
+        }
+
+        .lesson-text {
+            color: #ccc;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            margin-top: 25px;
+        }
+
+        .lesson-image {
+            display: block;
+            max-width: 100%;
+            max-height: 450px;
+            object-fit: contain;
+            margin-top: 25px;
+            border-radius: 12px;
+        }
+
+        .lesson-video {
+            display: block;
+            width: 100%;
+            max-height: 480px;
+            margin-top: 25px;
+            border-radius: 12px;
+        }
+
+        .test-card {
+            background: #1b1b1b;
+            border: 1px solid #303030;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+
+        .question {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #303030;
+        }
+
+        .answer-option {
+            display: block;
+            margin-top: 12px;
+            color: #ccc;
+        }
+
+        .submit-button {
+            margin-top: 25px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #7c5cff;
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .empty-message {
+            color: #888;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>DevSpace</h2>
+
+    <nav class="navigation">
+        <a href="/">Главная</a>
+        <a href="/#courses">Курсы</a>
+        <a href="/#projects">Проекты</a>
+        <a href="/#articles">Статьи</a>
+        <a href="/profile">Профиль</a>
+    </nav>
+</div>
+
+<div class="main">
+    <div class="lesson-content">
+
+        <a href="/courses/page/{{ lesson.course_id }}"
+           style="color: #888; text-decoration: none;">
+            ← Назад к курсу
+        </a>
+
+        <h1 style="margin-top: 30px;">
+            {{ lesson.title }}
+        </h1>
+
+        <div class="lesson-text">
+            {{ lesson.content }}
+        </div>
+
+        {% if lesson.image_url %}
+            <img
+                src="{{ lesson.image_url }}"
+                alt="Изображение к уроку"
+                class="lesson-image"
+            >
+        {% endif %}
+
+        {% if lesson.video_url %}
+            <video controls class="lesson-video">
+                <source src="{{ lesson.video_url }}" type="video/mp4">
+                Ваш браузер не поддерживает воспроизведение видео.
+            </video>
+        {% endif %}
+
+        <hr style="border-color: #292929; margin: 40px 0;">
+
+        <h2>Тесты по уроку</h2>
+
+        {% if tests_data %}
+
+            {% for item in tests_data %}
+
+                <div class="test-card">
+
+                    <h3>{{ item.test.title }}</h3>
+
+                    {% if item.test.description %}
+                        <p style="color: #aaa;">
+                            {{ item.test.description }}
+                        </p>
+                    {% endif %}
+
+                    {% if item.questions %}
+
+                        <form
+                            action="/tests/{{ item.test.id }}/submit-form"
+                            method="post"
+                        >
+
+                            {% for question in item.questions %}
+
+                                <div class="question">
+
+                                    <h4>
+                                        {{ loop.index }}. {{ question.question }}
+                                    </h4>
+
+                                    {% for option in question.options %}
+
+                                        <label class="answer-option">
+                                            <input
+                                                type="radio"
+                                                name="question_{{ question.id }}"
+                                                value="{{ loop.index0 }}"
+                                                required
+                                            >
+
+                                            {{ option }}
+                                        </label>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            {% endfor %}
+
+                            <button
+                                type="submit"
+                                class="submit-button"
+                            >
+                                Проверить ответы
+                            </button>
+
+                        </form>
+
+                    {% else %}
+
+                        <p class="empty-message">
+                            В этом тесте пока нет вопросов.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <p class="empty-message">
+                Для этого урока пока нет тестов.
+            </p>
+
+        {% endif %}
+
+    </div>
+</div>
+
+</body>
+</html>
